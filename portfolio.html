@@ -1,0 +1,470 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <link href="vicbee.css" rel="stylesheet" type="text/css">
+  <title>VICBee Consulting &mdash; Efficient Frontier in Constrained Portfolios</title>
+  <meta name="description" content="Study of effects of constraints on the efficient frontier in portfolio optimization">
+  <meta name="keywords" content="portfolio optimization, finance engineering, mathematical models, Kalman filter, Markowitz, quadratic programming, linear programming, dynamic programming">
+</head>
+
+<body>
+  
+  <div>
+
+    <img class="top" src="VICBee.jpg" alt="V I C B e e    C o n s u l t i n g"/>
+    
+    <p class="masternavbar">
+      <a class="navbar" href="index.html">HOME</a> | 
+      <a class="current" href="case.html">CASE STUDIES</a> | 
+      <a class="navbar" href="people.html">PEOPLE</a> | 
+      <a class="navbar" href="contact.html">CONTACT</a> |
+    </p>
+
+    <p class="subnavbar">
+      <a class="subnavbar" href="case.html">LARGE SCALE PORTFOLIO
+      OPTIMIZATION</a> |
+      <a class="subcurrent" href="portfolio.html">EFFICIENT FRONTIER IN
+      CONSTRAINED PORTFOLIOS</a> |
+    </p>
+
+    <h1>The Efficient Frontier in Constrained Portfolios</h1>
+
+    <p>
+      A fundamental concept in portfolio optimization is that of
+      the <em>Efficient Frontier</em>, which is the set of all
+      portfolios that minimize a measure of risk while guaranteeing a
+      certain level of return. By far the most studied and well
+      understood case is that of minimum variance portfolios, which
+      dates back to <a href="#ref2">Markowitz [1952]</a>. When no
+      constraints on the expected return or the variance of the
+      expected return of groups or the total number of assets is
+      present, the determination of the optimum portfolios can be done
+      through an analytic formula, a fact that facilitates the
+      development and discussion of its many properties.
+    </p>
+    
+    <p>
+      The case when constraints on groups of assets is present is much
+      less understood, mainly because no analytic formula for the
+      optimum portfolio can be derived. The following discussion is
+      meant to illustrate the beneficial role that can be played by
+      such constraints in portfolio optimization. It does not contain
+      proofs and the technical aspects of the problems been solved are
+      omitted.
+    </p>
+    
+    <p>
+      In a nutshell, the message is that while unconstrained
+      portfolios are easier to compute, they will more than often rely
+      heavily on leverage to finance its holdings. The introduction of
+      additional constraints, although complicating the optimization
+      problem to be solved, can effectively control that level of
+      leverage and help shape the desired portfolio without
+      significantly increasing the associated level of risk.
+    </p>
+
+    <h2>The Efficient Frontier</h2>
+    
+    <p>
+      We keep this discussion simple by adopting the variance of
+      expected returns a measure of risk of the
+      portfolio. See <a href="#ref2">Markowitz [1952]</a> or, for
+      instance, <a href="#ref2">Elton and Gruber [1995]</a> for a more
+      modern presentation.
+    </p>
+
+    <p>
+      Given a set of assets, their expected returns and the complete
+      covariance matrix, an optimum portfolio is therefore one that
+      minimizes the portfolio variance while guaranteeing a certain
+      rate of expected return. As stated, one can cast such portfolio
+      optimization problem as a convex quadratic program
+      (<a href="#ref3">Boyd and Vandenberghe [2004]</a>). In its
+      simplest version, without constraints, an analytic formula can
+      be obtained for the computation of the optimum portfolio
+      (<a href="#ref2">Elton and Gruber [1995]</a>).
+    </p>
+
+    <p>
+      In order to illustrate optimum portfolios under a variety of
+      constraints we will use the fictitious data
+      from <a href="#ref2">Elton and Gruber [1995]</a>, Chapter 6, p
+      106.  It consists of a small portfolio with 8 classes of
+      segmented global assets. The expected returns and standard
+      deviation of the return of such assets are given in the
+      following table:
+    </p>
+    
+    <table>
+      <thead>
+	<tr>
+	  <th/>
+	  <th>S & P</th>
+	  <th>Bonds</th>
+	  <th>Canadian</th>
+	  <th>Japan</th>
+	  <th>Emerging Markets</th>
+	  <th>Pacific</th>
+	  <th>Europe</th>
+	  <th>Small Stocks</th>
+	</tr>
+      </thead>
+      <tbody>
+	<tr>
+	  <th>Expected return</th>
+	  <td>14.0</td><td>6.5</td><td>11.0</td><td>14.0</td>
+	  <td>16.0</td><td>18.0</td><td>12.0</td><td>17.0</td>
+	</tr>
+	<tr>
+	  <th>Standard deviation</th>
+	  <td>18.5</td><td>5.0</td><td>16.0</td><td>23.0</td>
+	  <td>30.0</td><td>26.0</td><td>20.0</td><td>24.0</td>
+	</tr>
+      </tbody>
+    </table>
+
+    <p>
+      The correlation coefficients which can be used to assemble the
+      complete covariance matrix can be found in <a href="#ref2">Elton
+      and Gruber [1995]</a> or by
+      <a href="cov.txt">clicking here</a>.
+      With this information in hand one can trace the efficient frontier
+      by varying the expected return to obtain the plot in the next
+      figure:
+    </p>
+    
+    <img height="600" src="frontier1.jpg" alt="Efficient frontier"/>
+
+    <p>
+      The figure displays only a segment of the efficient frontier,
+      the red solid curve, along with all assets and their respective
+      return and standards deviations. It is clear that the main
+      advantage of portfolio optimization, which selects assets on the
+      efficient frontier, is to provide a significant reduction in
+      risk at any level of return. This feature comes however loaded
+      with some caveats. In the next sections we will discuss how some
+      of these caveats can be mitigated by improving the quality of
+      the underlying model with the introduction of additional
+      constraints.
+    </p>
+
+    <p>
+      We now enlist two caveats. First, optimum portfolios in the
+      unconstrained frontier can be very sensitive to the quality of
+      the model, here specially the
+      accuracy<sup style="font-size:xx-small"><a href="#note1">[1]</a></sup>
+      of the covariance matrix. Second, under the absence of other
+      constraints, the efficient frontier extends <em>ad
+      infinitum</em>, and one could theoretically extract any level of
+      return from this portfolio, often at the expense of much
+      leveraging. For instance, pick a given level of return,
+      say&nbsp;14%, which is the expected return of the S&P assets,
+      and take a closer look at its associated optimum portfolio
+      weights:
+    </p>
+    
+    <table>
+      <thead>
+	<tr>
+	  <th/>
+	  <th>S&P</th>
+	  <th>Bonds</th>
+	  <th>Canadian</th>
+	  <th>Japan</th>
+	  <th>Emerging</th>
+	  <th>Pacific</th>
+	  <th>Europe</th>
+	  <th>Small</th>
+	  <th>Standard deviation</th>
+	  <th>Leverage</th>
+	</tr>
+      </thead>
+      <tbody>
+	<tr>
+	  <th>(%)</th>
+	  <td>5.3</td><td>36.9</td><td style="color:red">-3.6</td><td>6.9</td>
+	  <td style="color:red">-12.0</td><td>33.7</td><td style="color:red">-11.5</td><td>44.2</td>  
+	  <td>12.9</td><td style="color:red">27.1</td>
+	</tr>
+      </tbody>
+    </table>
+
+    <p>
+      The above weights are associated with the optimum portfolio
+      shown in the figure above on the efficient frontier at the level
+      of 14% return.
+    </p>
+
+    <p>
+      The optimum portfolio provides the same return as the S&P assets
+      (14%) at a much lower risk (12.9% compared with 18.5%). Note
+      however that this is accomplished by short selling Canadian,
+      Emerging Markets and Europe, at a total level of
+      leveraging<sup style="font-size:xx-small"><a href="#note2">[2]</a></sup>
+      of 27.1%. Higher levels of return would generate even greater
+      number of short sales. Indeed, in this example, that is the
+      mechanism by which the optimum portfolios can provide returns
+      superior to 18% at risk levels less than 26%, the marks which
+      one would obtain by holding only Pacific.
+    </p>
+    
+    <p>
+      With that in mind, it is natural to try to incorporate into the
+      portfolio optimization procedure some type of constraint on the
+      level of leveraging. One can do that individually, per asset, or
+      globally. In the next section we adopt the latter type of
+      constraint on the global level of leveraging.
+    </p>
+      
+
+    <h2>Limiting Leverage</h2>
+
+    <p>
+      Contrary to what happens in the case of an unconstrained
+      portfolio, where the efficient frontier had an analytic
+      expression that could be readily computed, the introduction of a
+      constraint on leveraging leaves one with the task of computing
+      the optimum portfolios by using numerical methods. This extra
+      complication is however compensated by a more insightful
+      efficient frontier. For example, in the next figure we have
+      computed the efficient frontier subject to two levels of
+      constraints on maximum leveraging:
+    </p>
+
+    <img height="600" src="frontier2.jpg" alt="Efficient frontier with
+    leverage constraints"/>
+
+    <p>
+      The <b>solid green curve</b> is the efficient frontier when the
+      total leveraging is <b>constrained to be at most 7%</b>. The
+      <b>solid blue curve</b> is the efficient frontier when <b>no
+      short sales are allowed</b>. Note that as a result of these
+      constraints, the efficient frontier has now shifted and is now a
+      finite curve segment in both cases. In particular, when no
+      leveraging is permitted one is faced at the extremes with a
+      choice of holding either Bonds, for minimum return, or Pacific,
+      for maximum return.
+    </p>
+
+    <p>
+      Note also that the three curves have no point in common. This
+      means that no optimum portfolio on the solid red efficient
+      frontier has a level of leverage below&nbsp;7%. Yet, as the
+      figure illustrates, optimum portfolios with very similar risk
+      and return exist throughout most of the interesting range of
+      returns, in this case between 8% and 17%, which have leveraging
+      levels of 7% and even with no leveraging at all! Again to make a
+      point about a specific return level, consider&nbsp;14%. The
+      three optimum portfolios indicated in the above figure
+      correspond to the weights:
+    </p>
+
+    <table>
+      <thead>
+	<tr>
+	  <th/>
+	  <th>S&P</th>
+	  <th>Bonds</th>
+	  <th>Canadian</th>
+	  <th>Japan</th>
+	  <th>Emerging</th>
+	  <th>Pacific</th>
+	  <th>Europe</th>
+	  <th>Small</th>
+	  <th>Standard deviation</th>
+	  <th>Leverage</th>
+	</tr>
+      </thead>
+      <tbody>
+	<tr>
+	  <th>(%)</th>
+	  <td>5.3</td><td>36.9</td><td style="color:red">-3.6</td><td>6.9</td>
+	  <td style="color:red">-12.0</td><td>33.7</td><td style="color:red">-11.5</td><td>44.2</td>  
+	  <td>12.9</td><td style="color:red">27.1</td>
+	</tr>
+	<tr>
+	  <th></th>
+	  <td>&mdash;</td><td>31.5</td><td>&mdash;</td><td>3.1</td><td style="color:red">-7.0</td><td>32.5</td><td>&mdash;</td><td>39.9</td><td>13.1</td><td style="color:red">7.0</td>
+	</tr>
+	<tr>
+	  <th></th>
+          <td>&mdash;</td><td>30.9</td><td>&mdash;</td><td>2.7</td><td>&mdash;</td><td>32.1</td><td>&mdash;</td><td>34.4</td><td>13.4</td><td>&mdash;</td>
+	</tr>
+      </tbody>
+    </table>
+
+    <p>
+      Note the negligible impact in the standard deviations of these
+      optimum portfolios, that is their aggregate risk, as compared
+      with the very large variation in the required level of borrowing
+      required to holding these portfolios.
+    </p>
+    
+    <p>
+      This may be the most significant advantage of improving the
+      quality of the underlying model by incorporating in the
+      portfolio optimization procedure operational and strategic
+      constraints, rather than trying to adapt an optimal solution
+      obtained in the unconstrained case to fit practical realities.
+    </p>
+
+    <h2>Constraints on Selected Positions</h2>
+
+    <p>
+      In the presence of additional constraints the efficient frontier
+      will shift further. In this section we consider constraints on
+      minimum positions on certain assets. For instance, let us look
+      for optimum portfolios in which <b>at least 30% of the total
+      investment is in S&P and at least 10% is in Bonds</b>. The
+      efficient frontier is now computed and displayed in the next
+      figure under <b>arbitrary leverage (solid magenta)</b>, <b>7%
+      (solid green)</b> or <b>no leverage (solid blue)</b>
+      constraints. For reference the fully <b>unconstrained</b> efficient
+      frontier is also shown in <b>solid red</b>.
+    </p>
+      
+    <img height="600" src="frontier3.jpg" alt="Efficient frontier with
+    leverage constraints"/>
+
+    <p>
+      Note how enforcing minimum positions in S&P and Bonds
+      significantly reduce the range of returns available at the
+      efficient frontier, specially when combined with leverage
+      constraints (blue and green curves). Yet, just as before, in the
+      case of leverage constraints alone, optimum portfolios are
+      available that are very close to the original unconstrained
+      efficient frontier in most of the feasible range. Once again,
+      consider the return level of 14%. Four optimum portfolios in
+      each of the efficient frontiers depicted above are shown in the
+      next table.
+    </p>
+
+    <table>
+      <thead>
+	<tr>
+	  <th/>
+	  <th>S&P</th>
+	  <th>Bonds</th>
+	  <th>Canadian</th>
+	  <th>Japan</th>
+	  <th>Emerging</th>
+	  <th>Pacific</th>
+	  <th>Europe</th>
+	  <th>Small</th>
+	  <th>Standard deviation</th>
+	  <th>Leverage</th>
+	</tr>
+      </thead>
+      <tbody>
+	<tr>
+	  <th>(%)</th>
+	  <td>5.3</td><td>36.9</td><td style="color:red">-3.6</td><td>6.9</td>
+	  <td style="color:red">-12.0</td><td>33.7</td><td style="color:red">-11.5</td><td>44.2</td>  
+	  <td>12.9</td><td style="color:red">27.1</td>
+	</tr>
+	<tr>
+	  <th></th>
+	  <td>30.0</td><td>34.8</td><td style="color:red">-8.7</td><td>10.0</td><td style="color:red">-9.8</td><td>30.8</td><td style="color:red">-18.5</td><td>31.4</td><td>13.1</td><td style="color:red">37.0</td>
+	</tr>
+	<tr>
+	  <th></th>
+	  <td>30.0</td><td>23.2</td><td>&mdash;</td><td>6.2</td><td style="color:red">-2.6</td><td>27.4</td><td style="color:red">-4.4</td><td>20.2</td><td>13.5</td><td style="color:red">7.0</td>
+	</tr>
+	<tr>
+	  <th></th>
+	  <td>30.0</td><td>21.2</td><td>&mdash;</td><td>4.7</td><td>&mdash;</td><td>26.8</td><td>&mdash;</td><td>17.3</td><td>13.8</td><td>&mdash;</td>
+	</tr>
+      </tbody>
+    </table>
+
+    <p>
+      One more time, the increased risk (standard deviation of the
+      return) is insignificant if compared with the variation in the
+      amount of short sales as we enforce leverage constraints jointly
+      with minimum positions on S&P and Bonds. Note that for the 14%
+      return level the 30% minimum in S&P is active (that means
+      satisfied at the required minimum) on all three optimum
+      portfolios whereas the optimal withholding of Bonds is always
+      greater than the required minimum. At higher levels of return
+      the 15% constraint on Bonds becomes active as well.
+    </p>
+
+    <p>
+      It might come as a surprise to some to observe that the optimum
+      portfolio obtained with no constraint on leveraging but where
+      the minimum holdings on S&P and Bonds are enforced actually
+      (solid magenta) produces the highest number of short sales,
+      raising the required overall leveraging by almost 40% (from
+      27.1% to 37.0%). The conclusion is once again that one should
+      incorporate as many practical constraints as possible on the
+      underlying portfolio model in order to obtain reasonable and
+      meaningful portfolios.
+    </p>
+
+    <h2>References</h2> 
+    
+    <ul>
+      <li>
+	<a name="ref1"/> 
+	Harry M. Markowitz, &ldquo;Portfolio Selection&rdquo;. <em>Journal of
+	Finance</em>, <bf>7</bf>(1): 77 - 91, 1952.
+      </li>
+      <li>
+	<a name="ref2"/>
+	Edwin J. Elton and Martin J. Gruber, <em>Modern Portfolio
+	Theory and Investment Analysis</em>. Fifth Edition, John Wiley
+	and Sons, 1995.
+      </li>
+      <li>
+	<a name="ref3"/> 
+	Stephen P. Boyd and Lieven Vandenberghe, <em>Convex
+	Optimization</em>. Cambridge University Press, 2004.
+      </li>
+    </ul>
+
+    <h2>Notes</h2> 
+
+    <ol>
+      <li>
+	<a name="note1"/> 
+	One might argue that it may be very difficult to obtain such
+	information without bearing a significant degree of uncertainty.
+      </li>
+      <li>
+	<a name="note2"/> In this discussion we are not assuming a
+	particular riskless source of lending and borrowing that could
+	finance the leveraging. Once the efficient frontier has been
+	determined then one can use standard techniques (see, for
+	instance <a href="#ref2">Elton and Gruber [1995]</a>) in order
+	to determine the optimum level of return one should expect in
+	the presence of a particular rate. In our particular example,
+	the optimum return of 14% is associated with a riskless
+	lending and borrowing rate of approximately 5%.
+      </li>
+    </ol>
+
+    <p style="margin-top:1cm; text-align:right; margin-right:6em; font-size:large">
+      <em>Mauricio de Oliveira</em>
+    </p>
+
+    <p class="bottom">
+      Copyright &copy; 2009 VICBee Consulting
+    </p>
+
+  </div>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-11888840-1");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+</html>
