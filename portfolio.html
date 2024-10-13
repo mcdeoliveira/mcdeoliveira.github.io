@@ -14,25 +14,24 @@
   
   <div>
 
-    <img class="top" src="VICBee.jpg" alt="V I C B e e    C o n s u l t i n g"/>
+    <img class="top" src="figs/VICBee.jpg" alt="V I C B e e    C o n s u l t i n g"/>
     
     <p class="masternavbar">
       <a class="navbar" href="index.html">HOME</a> | 
       <a class="current" href="case.html">CASE STUDIES</a> | 
       <a class="navbar" href="people.html">PEOPLE</a> | 
-      <a class="navbar" href="optimize.html">OPTIMIZE API</a> |
+      <a class="navbar" href="apis.html">REST APIS</a> |
       <a class="navbar" href="contact.html">CONTACT</a> |
     </p>
 
     <p class="subnavbar">
-      <a class="subnavbar" href="case.html">LARGE SCALE PORTFOLIO
-      OPTIMIZATION</a> |
-      <a class="subcurrent" href="portfolio.html">EFFICIENT FRONTIER IN
-      CONSTRAINED PORTFOLIOS</a> |
+      <a class="subnavbar" href="case.html">LARGE SCALE OPTIMIZATION</a> |
+      <a class="subcurrent" href="portfolio.html">EFFICIENT FRONTIER</a> |
+      <a class="subnavbar" href="models.html">RETURN AND VARIANCE MODELS</a> |
     </p>
 
     <p>
-        An interactive version of this case study that uses our <a href="optimize.html">Optimize API</a> can be
+        An interactive version of this case study that uses our <a href="apis.html">Optimize API</a> can be
         run online in Python as a <a href="https://ipython.org/notebook.html">Jupyter notebook</a> without installing any packages.
     </p>
     <p>
@@ -154,7 +153,7 @@
       figure:
     </p>
     
-    <img height="600" src="frontier1.jpg" alt="Efficient frontier"/>
+    <img height="600" src="figs/frontier1.jpg" alt="Efficient frontier"/>
 
     <p>
       The figure displays only a segment of the efficient frontier,
@@ -252,7 +251,7 @@
       constraints on maximum leveraging:
     </p>
 
-    <img height="600" src="frontier2.jpg" alt="Efficient frontier with
+    <img height="600" src="figs/frontier2.jpg" alt="Efficient frontier with
     leverage constraints"/>
 
     <p>
@@ -344,7 +343,7 @@
       frontier is also shown in <b>solid red</b>.
     </p>
       
-    <img height="600" src="frontier3.jpg" alt="Efficient frontier with
+    <img height="600" src="figs/frontier3.jpg" alt="Efficient frontier with
     leverage constraints"/>
 
     <p>
@@ -422,51 +421,46 @@
       meaningful portfolios.
     </p>
 
-    <h2>References</h2> 
+    <p style="margin-top:1cm; text-align:right; margin-right:6em; font-size:large">
+      <em>Mauricio de Oliveira</em>
+    </p>
+
+    <h2>References</h2>
     
-    <ul>
-      <li>
-	<a name="ref1"/> 
-	Harry M. Markowitz, &ldquo;Portfolio Selection&rdquo;. <em>Journal of
-	Finance</em>, <bf>7</bf>(1): 77 - 91, 1952.
+    <ol>
+      <li id="ref1">
+        Harry M. Markowitz, &ldquo;Portfolio Selection&rdquo;. <em>Journal of
+        Finance</em>, <bf>7</bf>(1): 77 - 91, 1952.
       </li>
-      <li>
-	<a name="ref2"/>
-	Edwin J. Elton and Martin J. Gruber, <em>Modern Portfolio
-	Theory and Investment Analysis</em>. Fifth Edition, John Wiley
-	and Sons, 1995.
+      <li id="ref2">
+        Edwin J. Elton and Martin J. Gruber, <em>Modern Portfolio
+        Theory and Investment Analysis</em>. Fifth Edition, John Wiley
+        and Sons, 1995.
       </li>
-      <li>
-	<a name="ref3"/> 
-	Stephen P. Boyd and Lieven Vandenberghe, <em>Convex
-	Optimization</em>. Cambridge University Press, 2004.
+      <li id="ref3">
+        Stephen P. Boyd and Lieven Vandenberghe, <em>Convex
+        Optimization</em>. Cambridge University Press, 2004.
       </li>
-    </ul>
+    </ol>
 
     <h2>Notes</h2> 
 
     <ol>
-      <li>
-	<a name="note1"/> 
-	One might argue that it may be very difficult to obtain such
-	information without bearing a significant degree of uncertainty.
+      <li id="note1">
+        One might argue that it may be very difficult to obtain such
+        information without bearing a significant degree of uncertainty.
       </li>
-      <li>
-	<a name="note2"/> In this discussion we are not assuming a
-	particular riskless source of lending and borrowing that could
-	finance the leveraging. Once the efficient frontier has been
-	determined then one can use standard techniques (see, for
-	instance <a href="#ref2">Elton and Gruber [1995]</a>) in order
-	to determine the optimum level of return one should expect in
-	the presence of a particular rate. In our particular example,
-	the optimum return of 14% is associated with a riskless
-	lending and borrowing rate of approximately 5%.
+      <li id="note2"> In this discussion we are not assuming a
+        particular riskless source of lending and borrowing that could
+        finance the leveraging. Once the efficient frontier has been
+        determined then one can use standard techniques (see, for
+        instance <a href="#ref2">Elton and Gruber [1995]</a>) in order
+        to determine the optimum level of return one should expect in
+        the presence of a particular rate. In our particular example,
+        the optimum return of 14% is associated with a riskless
+        lending and borrowing rate of approximately 5%.
       </li>
     </ol>
-
-    <p style="margin-top:1cm; text-align:right; margin-right:6em; font-size:large">
-      <em>Mauricio de Oliveira</em>
-    </p>
 
     <p class="bottom">
       Copyright &copy; 2009 VICBee Consulting
