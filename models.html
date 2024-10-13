@@ -1,0 +1,492 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <link href="vicbee.css" rel="stylesheet" type="text/css">
+  <title>VICBee Consulting &mdash; Return and Variance Models</title>
+  <meta name="description" content="Study of assumptions on return and variance asset models">
+  <meta name="keywords" content="portfolio optimization, finance engineering, mathematical models, Kalman filter, Markowitz, quadratic programming, linear programming, dynamic programming">
+
+  <script type="text/x-mathjax-config">
+    MathJax = {
+      tex: {inlineMath: [['$', '$'], ['\\(', '\\)']]}
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+
+<body>
+
+  <div>
+
+    <img class="top" src="figs/VICBee.jpg" alt="V I C B e e    C o n s u l t i n g"/>
+
+    <p class="masternavbar">
+      <a class="navbar" href="index.html">HOME</a> |
+      <a class="current" href="case.html">CASE STUDIES</a> |
+      <a class="navbar" href="people.html">PEOPLE</a> |
+      <a class="navbar" href="apis.html">REST APIS</a> |
+      <a class="navbar" href="contact.html">CONTACT</a> |
+    </p>
+
+    <p class="subnavbar">
+      <a class="subnavbar" href="case.html">LARGE SCALEO PTIMIZATION</a> |
+      <a class="subnavbar" href="portfolio.html">EFFICIENT FRONTIER</a> |
+      <a class="subcurrent" href="models.html">RETURN AND VARIANCE MODELS</a> |
+    </p>
+
+    <h1>Return and Variance Models</h1>
+
+    <p>
+      Before starting, it is important to keep in mind that whatever
+      technique is used to measure the performance of assets, the resulting model is
+      essentially phenomenological, without no physical laws to support predictions.
+      In that sense, simplicity and interpretability go a long way in producing a useful
+      and effective model.
+    </p>
+
+    <p>
+      The models used for portfolio optimization by the
+      <a href="https://optimize.vicbee.net/optimize/api/ui">Optimize API</a>
+      are expected return and variance asset models.
+      See references [<a href="#ref1">1</a>-<a href="#ref1">3</a>] and this
+      <a href="./portfolio.html">case study</a> for details.
+      In such models, an asset return is represented by two quantities:
+      the <em>expected return</em>, \( \mu_i \), and its <em>variance</em>,
+      \( \sigma_i^2 \), that is
+      $$
+        \begin{aligned}
+          \mu_{i} &= E \{ r_i \}, &
+          \sigma_i^2 = c_{i,i} &= E \{ (r_i - \mu_i)^2 \}.
+        \end{aligned}
+      $$
+      With more than one asset, we add to the model the <em>correlation</em> between
+      each asset,
+      $$
+        c_{i,j} = E \{ (r_i - \mu_i) (r_j - \mu_j) \}.
+      $$
+    </p>
+
+    <p>
+      The expected return and variance of a portfolio is then optimized by evaluating
+      $$
+        \begin{aligned}
+          \mu(\theta) &= \sum_{i} \theta_i \, \mu_i, &
+          \sigma^2(\theta) &= \sum_{i, j} c_{i, j} \, \theta_i \, x_j,
+        \end{aligned}
+      $$
+      in which \( \theta_i \) is the asset's weight on the portfolio (more on portfolio
+      weights and some not so obvious caveats <a href="#portfolios">below</a>).
+    </p>
+
+    <p>
+      For a given portfolio, expected return and variance for each asset and their
+      covariances can be estimated by the
+      <a href="https://optimize.vicbee.net/optimize/api/ui">Models API</a>.
+      This note goes over some important aspects that need to be taken into account
+      when estimating returns and variances and their use in portfolio optimization.
+    </p>
+
+    <h2>Historic Asset Prices</h2>
+
+    <p>
+      Expected returns and their variances are typically estimated from historic price
+      series<sup style="font-size:xx-small"><a href="#note1">[1]</a></sup>.
+      As the number of parameters to be estimated grows with the square
+      of the size of the number of assets in the portfolio, so does the demand on data
+      and the uncertainty about those estimates.
+    </p>
+
+    <p>
+      In this case study, we highlight some difficulties involved in the estimation of
+      expected returns and variances. From the choice of return series to use to the
+      methodology employed to calculate the estimates, it is quite easy to
+      get astray and end up with models that are not very representative.
+    </p>
+
+    <p>
+      To make the discussion concrete, we shall work with two particular assets: NVDA and
+      TQQQ. Their adjusted<sup style="font-size:xx-small"><a href="#note2">[2]</a></sup>
+      price series, retrieved and calculated over the course of the last five years at
+      the time of this note writing, October 2024, is shown in the plots below.
+    </p>
+
+    <div class="right">
+      <img height="220" src="figs/nvda1.png" alt="NVDA"/>
+    </div>
+    <div class="right">
+      <img height="220" src="figs/tqqq1.png" alt="NVDA"/>
+    </div>
+
+    <p>
+      As so much has happened within the last five years, this is a very
+      interesting period to study. As for singling out these two
+      assets, NVDA seems an obvious choice given its recent incredible exponential
+      growth, while TQQQ displays some interesting ups-and-downs.
+    </p>
+
+    <h2>Daily Returns</h2>
+
+    <p>
+      A naive approach to estimating the return of assets is to calculate the
+      statistics of the <em>daily returns</em>. If \( p[k] \) denotes the price of an asset
+      at day \( k \), then
+    </p>
+
+    <div class="right">
+      <img height="220" src="figs/tqqq2.png" alt="TQQQ"/>
+    </div>
+
+    <p>
+      $$
+        r[k] = \frac{p[k] - p[k-1]}{p[k-1]}
+      $$
+      is the corresponding <em>daily return</em>.
+      For TQQQ, the corresponding series of daily returns is ploted on the right.
+    </p>
+
+    <p>
+      For each series of daily returns we calculate the sample mean (\( \hat{\mu} \)) and
+      sample standard deviation (\( \hat{\sigma} \)).
+      In the daily return plot, the solid line is the mean and the dashed lines are
+      the corresponding 3-\( \sigma \) intervals.
+    </p>
+
+    <p>
+      Without putting much thought into it,
+      notice that the estimated mean return is expected to be tiny when compared with the
+      variance of the daily returns, which can make its estimation tricky. Before
+      proceeding, we take a look at the histogram of the daily return series
+      to assess how close to <em>normal</em> or at least symmetrically distributed
+      it looks, as a way to support the use of the simple statistics above. The
+      histogram, shown in the next plot, does not immediately raises suspicions.
+    </p>
+
+    <div class="right">
+      <img height="220" src="figs/tqqq3.png" alt="TQQQ"/>
+    </div>
+
+    <p>
+      If we substitute the daily return by its expected value, that is
+      \( r[k] = \mu \), then we are implicitly assuming that \( p[k] \) evolves as
+      $$
+         p[k] = (1 + \mu) \, p[k-1]
+      $$
+      or, in other words, that the price evolution is the exponential
+      $$
+         p[k] = (1 + \mu)^k \, p[0].
+      $$
+      Substituting \( \mu \) for the estimated sample mean \( \hat{\mu} \) and
+      superimposing the resulting exponential to the price series we obtain the
+      plot on the right, in which the predicted price estimated by the model is
+      the orange solid curve.
+    </p>
+
+    <div class="right">
+      <img height="220" src="figs/tqqq4.png" alt="TQQQ"/>
+    </div>
+
+    <p>
+      It is striking how the above estimate fails to match the original price behaviour.
+      One may attempt to improve the model by looking at other statistics of the daily returns,
+      for one example, the median.
+      No matter how one tries to massage the series of daily returns into producing a
+      return model which looks reasonable when compared with the evolution of the price,
+      one will always find an asset for which the model quality is subpar.
+      In order to obtain better models we need to work directly with prices.
+    </p>
+
+    <h2>Prices, Returns, and the Power of Log</h2>
+
+    <p>
+      Estimating returns based on simple aggregate statistics of the daily
+      return series turned out not to be a good idea.
+      For one thing, the mean or any other aggregate statistic of the daily returns do
+      not take into account <em>when</em> that return happened. In fact, if one permutes
+      the daily returns, one would still obtain the same aggregate statistics, but yet
+      completely different price series.
+    </p>
+
+    <p>
+      It also happens that knowing how an asset performed on a particular day in the past
+      is not very informative when it comes to assessing the asset's performance measured
+      with respect to today's price. What an investor cares to
+      know is how much one would have <em>today</em> if he or she had invested at a certain
+      point in time. That is not the series of daily returns, but rather the series of
+      <em>compound returns as measured from any point in time until today</em>. If we
+      let \( p[n] \) denote the price of the asset today, then what we are after is the
+      value of \( r_n[k] \) such that
+      $$
+        p[n] = \left ( 1 + r_n[k] \right )^{n-k} p[k], \qquad k < n.
+      $$
+      Due to the multiplicative nature of returns, it is easier to work with the
+      <em>logarithm</em> of the prices, rather than with the prices. More specifically,
+      it is better to work with the much simpler quantity
+      $$
+        a[k] = \log(1 + r_n[k]) = \frac{\log p[k] - \log p[n]}{k - n}, \qquad k < n.
+      $$
+    </p>
+
+    <p>
+      For more insight, one can rearrange the above equation into the form
+      $$
+        \log p[k] = \log p[n] + a[k] \, (k - n)
+      $$
+      which, for a constant \( a[k] = \mu_{a} \), can be identified with an equation of the form
+      $$
+        y = y_n + \mu_{a} \, (x - x_n).
+      $$
+      This is a line with slope \( \mu_{a} \) that passes through the point \( (x_n, y_n) \). Indeed,
+      \( y = y_n \) when \( x = x_n \).
+      In terms of the log-price,
+    </p>
+
+    <div class="right">
+      <img height="220" src="figs/tqqq5.png" alt="TQQQ"/>
+      <img height="220" src="figs/tqqq6.png" alt="TQQQ"/>
+    </div>
+
+    <p>
+      $$
+        \underbrace{\log p[k]}_{y} = \underbrace{\log p[n]}_{y_n} + \mu_{a} \, (\underbrace{k - n}_{x - x_n}).
+      $$
+    </p>
+
+    <p>
+      The above discussion provides a different perspective from which to estimate an
+      asset's return: as the slope of the best fit line that goes by today's price in
+      logarithmic scale.
+    </p>
+
+    <p>
+      Such an estimate can be obtained by performing a standard linear regression.
+      The plot on the right show the result of such a fit for our favorite
+      asset, TQQQ, which is much more sensible than the one obtained before from the
+      statistics of the daily returns.
+    </p>
+
+    <p>
+      From logarithmic scale, we can convert back to linear scale in order to
+      obtain the corresponding exponential model, shown in the plot on the right,
+      which also looks very reasonable.
+    </p>
+
+    <p>
+      As a bonus, the linear fit interpretation comes with built-in estimates for the
+      variance of the estimated slopes, which we can adopt as estimates for the asset
+      return variance. One caveat here is that those estimates are obtained in
+      logarithmic scale, and they need to be properly translated back into linear scale
+      for use in portfolio optimization.
+      In the same vein, it is not immediately clear how to proceed on estimating the
+      correlation between assets, or to construct
+      <em>factor models</em><sup style="font-size:xx-small"><a href="#note3">[3]</a></sup>.
+      All of these <i>details</i> are taken care by the algorithms implemented in the
+      <a href="https://optimize.vicbee.net/optimize/api/ui">Models API</a>.
+      In translating from logarithmic scale to linear and <em>vice-versa</em>, the
+      algorithms in
+      <a href="https://optimize.vicbee.net/optimize/api/ui">Models API</a>
+      employ the formalism of log-normal models <a href="#ref3">[3, \( \S \)16.7]</a>.
+    </p>
+
+    <div class="right">
+      <img height="220" src="figs/nvda5.png" alt="NVDA"/>
+    </div>
+    <div class="right">
+      <img height="220" src="figs/nvda6.png" alt="NVDA"/>
+    </div>
+
+    <p>
+      As a sanity check, we repeat the above exercise for a second asset, this time NVDA,
+      which results in the logarithmic and exponential fits on the plots on the right,
+      which shows even better results.
+    </p>
+
+    <h2 id="portfolios">The Return of Portfolios</h2>
+
+    <p>
+      Having found a satisfactory ways in which to estimate returns and variance of
+      individual assets, we now turn to the problem of using such models for optimizing
+      portfolios. It is worth clearly stating our fairly modest goals.
+      We are after two numbers, the elusive expected return and its variance, which
+      represent the performance of the portfolio based on estimates of the returns and
+      covariances of the individual assets in that portfolio.
+    </p>
+
+    <p>
+      Whereas one might be tempted to simply plugging in the estimated assets' return
+      and covariance into the portfolio optimization model, it is important to pay
+      attention to one missing ingredient: the investor's <em>investment horizon</em>.
+      At a minimum, it is important to match the periodicity with which the estimates
+      were calculated to the investor investment horizon.
+      The expected daily return and variance might mean little for an investor who
+      is not interested in trading daily! In that sense, we need to take into account the
+      effects of <em>long-term</em> investing <a href="#ref3">[3, \( \S \)10]</a>.
+    </p>
+
+    <p>
+      Consider a portfolio with \( m \) assets. Over time, the portfolio
+      is priced at
+      $$
+        \pi[k] = \sum_{i = 1}^{m} x_i[k],
+      $$
+      in which \( x_i[k] \) is the value of the \( i \)th asset at day \( k \).
+      If the investor keeps the number of shares in each asset fixed for a period of time
+      then we can speak of <em>portfolio weights</em>. If the number of shares of each
+      asset in a portfolio is kept constant and equal to today's number of shares, then
+      $$
+        \frac{x_i[k]}{p_i[k]} = \frac{x_i[n]}{p_i[n]}, \qquad \text{for all } i \text{ and } k.
+      $$
+      in which \( p_i[k] \) is the price of each share of the \( i \)th asset at day
+      \( k \). In that case
+      $$
+      \begin{aligned}
+        \frac{\pi[k]}{\pi[n]} &= \sum_{i = 1}^{m} \theta_i \frac{p_i[k]}{p_i[n]}, \qquad
+        \theta_i = \frac{x_i[n]}{\pi[n]} \geq 0, \quad \sum_{i = 1}^m \theta_i = 1.
+      \end{aligned}
+      $$
+      The \( \theta_i \)'s are the <em>portfolio weights</em>. Clearly, it only makes
+      sense to optimize portfolio weights if one also knows how long the investor is
+      expected to keep the portfolio shares constant, that is if we know the
+      <em>investment horizon</em>. Furthermore, the impact of holding a portfolio constant
+      are inexorable: in the <em>long term</em>, the portfolio becomes the asset with the
+      highest return <a href="#ref3">[3, \( \S \) 10]</a>.
+    </p>
+
+    <p>
+      As with individual assets, it is better to evaluate the return of the portfolio in
+      the log-domain
+      $$
+      \begin{aligned}
+        \alpha[k] &= \frac{\log \pi[k] - \log \pi[n]}{k - n}
+        =
+        \frac{\log \sum_{i = 1}^{m} \theta_i \, (p_i[k]/p_i[n])}{k - n}
+        =
+        \frac{\log \sum_{i = 1}^{m} \theta_i \, e^{a_i[k] (k-n)}}{k - n}.
+      \end{aligned}
+      $$
+      Note that the portfolio return over time, \( \alpha[k] \), is not constant even if
+      the individual assets' returns, the \( a_i \)'s, were constant!
+      This is another way to see the impact of long-term holding of portfolios mentioned above.
+    </p>
+
+    <p>
+      Consequently, the portfolio return over a given investment horizon, say a horizon
+      of \( q \) days, is given by
+      $$
+        \mu[n+q]
+        =
+        \sum_{i = 1}^{m} \theta_i \, \mu_i[n+q],
+        \qquad
+        \mu_i[n+q]
+        =
+        e^{q \, a_i[n+1]} - 1.
+      $$
+      which is not only a function of the portfolio weights and the individual assets'
+      returns, but also of the investment horizon. It is therefore paramount
+      that one first adjusts the individual assets' expected return and variance before
+      attempting to optimize a portfolio.
+    </p>
+
+    <p>
+      The
+      <a href="https://optimize.vicbee.net/optimize/api/ui">Models API</a>
+      has options to output factor models with return and covariance adjusted to match
+      a given investment horizon. Note that such adjustment needs
+      to be done carefully because, in general<sup style="font-size:xx-small"><a href="#note4">[4]</a></sup>,
+      $$
+        a[k]
+        \geq
+        \sum_{i = 1}^{m} \theta_i \, a_i[k], \qquad k > n
+      $$
+      which means that simply combining the historic logarithmic return estimates usually
+      leads to overestimating the return of the portfolio.
+    </p>
+
+    <p style="margin-top:1cm; text-align:right; margin-right:6em; font-size:large">
+      <em>Mauricio de Oliveira</em>
+    </p>
+
+    <h2>References</h2>
+
+    <ol>
+      <li id="ref1">
+        Harry M. Markowitz, &ldquo;Portfolio Selection&rdquo;. <em>Journal of
+        Finance</em>, <bf>7</bf>(1): 77 - 91, 1952.
+      </li>
+      <li id="ref2">
+        Edwin J. Elton and Martin J. Gruber, <em>Modern Portfolio
+        Theory and Investment Analysis</em>. Fifth Edition, John Wiley
+        and Sons, 1995.
+      </li>
+      <li id="ref3">
+        Mark S. Joshi and Jane M. Paterson, <em>Introduction to Mathematical Portfolio
+        Theory</em>. Cambridge University Press, 2013.
+      </li>
+    </ol>
+
+    <h2>Notes</h2>
+
+    <ol>
+      <li id="note1">
+        During optimization, investors might want to merge prospective or predictive
+        models based on fundamentals or other considerations.
+      </li>
+      <li id="note2">
+        After compensating for splits and dividends.
+      </li>
+      <li id="note3">
+        Factor models are covariance models in which the covariance matrix takes the form
+        $$
+           C = C_\alpha + \beta \, C_f \, \beta^T
+        $$
+        In the above model, \( C_\alpha \) is usually a diagonal matrix, and the covariance
+        matrix \( C_f \) is the covariance matrix of the <em>factors</em>, which can be
+        assets, indices, or other indicators, which are believed to represent the overall
+        <em>market</em> performance.
+        <br/>
+        <br/>
+        Factor models are typically calculated by first establishing a relationship
+        between the assets and the factors. For example,
+        $$
+          r_i = \alpha_i + \sum_{k} \beta_{i,k} f_k + \epsilon_i
+        $$
+        expresses a linear relationship between the return of the \( i \)th asset and
+        the <em>factors</em> \( f_k \)'s. The coefficient \( \alpha_i \) represents the
+        <em>intrinsic</em> or <em>unsystematic</em> portion of the returns,
+        whereas the \( \beta_{i,j} \)'s represent the <em>systematic</em> part.
+        Here again, logarithms complicate things, and one needs to be careful in
+        calculating the model estimates.
+      </li>
+      <li id="note4">
+        Because \( \log \) is a concave function, if \( \theta_i \geq 0 \), then
+        $$
+          a[k]
+          \geq
+          \sum_{i = 1}^{m} \theta_i \, \frac{\log e^{a_i[k] (k-n)}}{k - n}
+          =
+          \sum_{i = 1}^{m} \theta_i \, a_i[k], \qquad k > n.
+        $$
+      </li>
+
+    </ol>
+
+    <p class="bottom">
+      Copyright &copy; 2009 VICBee Consulting
+    </p>
+
+  </div>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-11888840-1");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+</html>
