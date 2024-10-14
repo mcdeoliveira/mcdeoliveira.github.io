@@ -306,7 +306,7 @@
     <h2 id="portfolios">The Return of Portfolios</h2>
 
     <p>
-      Having found a satisfactory ways in which to estimate returns and variance of
+      Having found a satisfactory ways in which to estimate returns and variances of
       individual assets, we now turn to the problem of using such models for optimizing
       portfolios. It is worth clearly stating our fairly modest goals.
       We are after two numbers, the elusive expected return and its variance, which
@@ -321,7 +321,7 @@
       At a minimum, it is important to match the periodicity with which the estimates
       were calculated to the investor investment horizon.
       The expected daily return and variance might mean little for an investor who
-      is not interested in trading daily! In that sense, we need to take into account the
+      is not interested in trading daily! It is necessary to take into account the
       effects of <em>long-term</em> investing <a href="#ref3">[3, \( \S \)10]</a>.
     </p>
 
@@ -332,9 +332,8 @@
         \pi[k] = \sum_{i = 1}^{m} x_i[k],
       $$
       in which \( x_i[k] \) is the value of the \( i \)th asset at day \( k \).
-      If the investor keeps the number of shares in each asset fixed for a period of time
-      then we can speak of <em>portfolio weights</em>. If the number of shares of each
-      asset in a portfolio is kept constant and equal to today's number of shares, then
+      If the number of shares of each asset in a portfolio is kept constant and equal
+      to today's number of shares, then
       $$
         \frac{x_i[k]}{p_i[k]} = \frac{x_i[n]}{p_i[n]}, \qquad \text{for all } i \text{ and } k.
       $$
@@ -349,8 +348,8 @@
       The \( \theta_i \)'s are the <em>portfolio weights</em>. Clearly, it only makes
       sense to optimize portfolio weights if one also knows how long the investor is
       expected to keep the portfolio shares constant, that is if we know the
-      <em>investment horizon</em>. Furthermore, the impact of holding a portfolio constant
-      are inexorable: in the <em>long term</em>, the portfolio becomes the asset with the
+      <em>investment horizon</em>. Moreover, the impact of holding a portfolio constant
+      is inexorable: in the <em>long term</em>, the portfolio becomes the asset with the
       highest return <a href="#ref3">[3, \( \S \) 10]</a>.
     </p>
 
@@ -367,13 +366,10 @@
       \end{aligned}
       $$
       Note that the portfolio return over time, \( \alpha[k] \), is not constant even if
-      the individual assets' returns, the \( a_i \)'s, were constant!
-      This is another way to see the impact of long-term holding of portfolios mentioned above.
-    </p>
-
-    <p>
-      Consequently, the portfolio return over a given investment horizon, say a horizon
-      of \( q \) days, is given by
+      the individual assets' returns, the \( a_i \)'s, were constant, which is another
+      way to state the impact of long-term holdings mentioned above.
+      Putting it all together, the portfolio return over a given investment horizon, say
+      a horizon of \( q \) days, is given by
       $$
         \mu[n+q]
         =
@@ -384,24 +380,22 @@
         e^{q \, a_i[n+1]} - 1.
       $$
       which is not only a function of the portfolio weights and the individual assets'
-      returns, but also of the investment horizon. It is therefore paramount
-      that one first adjusts the individual assets' expected return and variance before
-      attempting to optimize a portfolio.
-    </p>
-
-    <p>
-      The
-      <a href="https://optimize.vicbee.net/optimize/api/ui">Models API</a>
-      has options to output factor models with return and covariance adjusted to match
-      a given investment horizon. Note that such adjustment needs
-      to be done carefully because, in general<sup style="font-size:xx-small"><a href="#note4">[4]</a></sup>,
-      $$
-        a[k]
-        \geq
-        \sum_{i = 1}^{m} \theta_i \, a_i[k], \qquad k > n
-      $$
-      which means that simply combining the historic logarithmic return estimates usually
-      leads to overestimating the return of the portfolio.
+      returns, the \( a_i \)'s, but also of the investment horizon, \( q \). It is
+      therefore paramount that one adjusts the individual assets' expected return and
+      variance before attempting to optimize a portfolio.
+      In the
+      <a href="https://optimize.vicbee.net/optimize/api/ui">Models API</a>,
+      models can be generated with return and covariance adjusted to match
+      a given investment horizon.
+<!--      Note that such adjustment needs-->
+<!--      to be done carefully because, in general<sup style="font-size:xx-small"><a href="#note4">[4]</a></sup>,-->
+<!--      $$-->
+<!--        a[k]-->
+<!--        \geq-->
+<!--        \sum_{i = 1}^{m} \theta_i \, a_i[k], \qquad k > n-->
+<!--      $$-->
+<!--      which means that simply combining the historic logarithmic return estimates usually-->
+<!--      leads to overestimating the return of the portfolio.-->
     </p>
 
     <p style="margin-top:1cm; text-align:right; margin-right:6em; font-size:large">
@@ -459,16 +453,16 @@
         Here again, logarithms complicate things, and one needs to be careful in
         calculating the model estimates.
       </li>
-      <li id="note4">
-        Because \( \log \) is a concave function, if \( \theta_i \geq 0 \), then
-        $$
-          a[k]
-          \geq
-          \sum_{i = 1}^{m} \theta_i \, \frac{\log e^{a_i[k] (k-n)}}{k - n}
-          =
-          \sum_{i = 1}^{m} \theta_i \, a_i[k], \qquad k > n.
-        $$
-      </li>
+<!--      <li id="note4">-->
+<!--        Because \( \log \) is a concave function, if \( \theta_i \geq 0 \), then-->
+<!--        $$-->
+<!--          a[k]-->
+<!--          \geq-->
+<!--          \sum_{i = 1}^{m} \theta_i \, \frac{\log e^{a_i[k] (k-n)}}{k - n}-->
+<!--          =-->
+<!--          \sum_{i = 1}^{m} \theta_i \, a_i[k], \qquad k > n.-->
+<!--        $$-->
+<!--      </li>-->
 
     </ol>
 
