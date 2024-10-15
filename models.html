@@ -32,7 +32,7 @@
     </p>
 
     <p class="subnavbar">
-      <a class="subnavbar" href="case.html">LARGE SCALEO PTIMIZATION</a> |
+      <a class="subnavbar" href="case.html">LARGE SCALE OPTIMIZATION</a> |
       <a class="subnavbar" href="portfolio.html">EFFICIENT FRONTIER</a> |
       <a class="subcurrent" href="models.html">RETURN AND VARIANCE MODELS</a> |
     </p>
@@ -84,7 +84,7 @@
     <p>
       For a given portfolio, expected return and variance for each asset and their
       covariances can be estimated by the
-      <a href="https://optimize.vicbee.net/optimize/api/ui">Models API</a>.
+      <a href="https://optimize.vicbee.net/models/api/ui">Models API</a>.
       This note goes over some important aspects that need to be taken into account
       when estimating returns and variances and their use in portfolio optimization.
     </p>
@@ -93,7 +93,7 @@
 
     <p>
       Expected returns and their variances are typically estimated from historic price
-      series<sup style="font-size:xx-small"><a href="#note1">[1]</a></sup>.
+      series<sup style="font-size:xx-small">[<a href="#note1">1</a>]</sup>.
       As the number of parameters to be estimated grows with the square
       of the size of the number of assets in the portfolio, so does the demand on data
       and the uncertainty about those estimates.
@@ -108,7 +108,7 @@
 
     <p>
       To make the discussion concrete, we shall work with two particular assets: NVDA and
-      TQQQ. Their adjusted<sup style="font-size:xx-small"><a href="#note2">[2]</a></sup>
+      TQQQ. Their adjusted<sup style="font-size:xx-small">[<a href="#note2">2</a>]</sup>
       price series, retrieved and calculated over the course of the last five years at
       the time of this note writing, October 2024, is shown in the plots below.
     </p>
@@ -281,12 +281,12 @@
       for use in portfolio optimization.
       In the same vein, it is not immediately clear how to proceed on estimating the
       correlation between assets, or to construct
-      <em>factor models</em><sup style="font-size:xx-small"><a href="#note3">[3]</a></sup>.
+      <em>factor models</em><sup style="font-size:xx-small">[<a href="#note3">3</a>,<a href="#note4">4</a>]</sup>.
       All of these <i>details</i> are taken care by the algorithms implemented in the
-      <a href="https://optimize.vicbee.net/optimize/api/ui">Models API</a>.
+      <a href="https://optimize.vicbee.net/models/api/ui">Models API</a>.
       In translating from logarithmic scale to linear and <em>vice-versa</em>, the
       algorithms in
-      <a href="https://optimize.vicbee.net/optimize/api/ui">Models API</a>
+      <a href="https://optimize.vicbee.net/models/api/ui">Models API</a>
       employ the formalism of log-normal models <a href="#ref3">[3, \( \S \)16.7]</a>.
     </p>
 
@@ -335,7 +335,7 @@
       If the number of shares of each asset in a portfolio is kept constant and equal
       to today's number of shares, then
       $$
-        \frac{x_i[k]}{p_i[k]} = \frac{x_i[n]}{p_i[n]}, \qquad \text{for all } i \text{ and } k.
+        x_i[k] = \frac{p_i[k]}{p_i[n]} x_i[n], \qquad \text{for all } i \text{ and } k,
       $$
       in which \( p_i[k] \) is the price of each share of the \( i \)th asset at day
       \( k \). In that case
@@ -350,11 +350,15 @@
       expected to keep the portfolio shares constant, that is if we know the
       <em>investment horizon</em>. Moreover, the impact of holding a portfolio constant
       is inexorable: in the <em>long term</em>, the portfolio becomes the asset with the
-      highest return <a href="#ref3">[3, \( \S \) 10]</a>.
+      highest return <a href="#ref3">[3, \( \S \) 10]</a>. How long is
+      &ldquo;long-term&rdquo; depends heavily on the composition of the portfolio as
+      well as the investment horizon, but the compounding of daily returns usually means
+      that one month might be already long-term when it comes to returns and their
+      covariances.
     </p>
 
     <p>
-      As with individual assets, it is better to evaluate the return of the portfolio in
+      As with individual assets, it is better to evaluate the return of portfolios in
       the log-domain
       $$
       \begin{aligned}
@@ -365,11 +369,11 @@
         \frac{\log \sum_{i = 1}^{m} \theta_i \, e^{a_i[k] (k-n)}}{k - n}.
       \end{aligned}
       $$
-      Note that the portfolio return over time, \( \alpha[k] \), is not constant even if
+      Note that the portfolio return over time, \( \alpha[k] \), is never constant, even if
       the individual assets' returns, the \( a_i \)'s, were constant, which is another
       way to state the impact of long-term holdings mentioned above.
-      Putting it all together, the portfolio return over a given investment horizon, say
-      a horizon of \( q \) days, is given by
+      A better measure of the portfolio return over a given investment horizon, say
+      a horizon of \( q \) days, is
       $$
         \mu[n+q]
         =
@@ -379,14 +383,13 @@
         =
         e^{q \, a_i[n+1]} - 1.
       $$
-      which is not only a function of the portfolio weights and the individual assets'
-      returns, the \( a_i \)'s, but also of the investment horizon, \( q \). It is
-      therefore paramount that one adjusts the individual assets' expected return and
-      variance before attempting to optimize a portfolio.
-      In the
-      <a href="https://optimize.vicbee.net/optimize/api/ui">Models API</a>,
-      models can be generated with return and covariance adjusted to match
-      a given investment horizon.
+    </p>
+    <p>
+      After the above discussion, it seems paramount that one adjusts the individual
+      assets' expected return and variance before attempting to optimize a portfolio.
+      It is for this reason that the models produced by the
+      <a href="https://optimize.vicbee.net/models/api/ui">Models API</a>,
+      have their returns and covariances adjusted to match a given investment horizon.
 <!--      Note that such adjustment needs-->
 <!--      to be done carefully because, in general<sup style="font-size:xx-small"><a href="#note4">[4]</a></sup>,-->
 <!--      $$-->
@@ -396,6 +399,11 @@
 <!--      $$-->
 <!--      which means that simply combining the historic logarithmic return estimates usually-->
 <!--      leads to overestimating the return of the portfolio.-->
+    </p>
+
+    <p>
+      That's enough for today.
+      We shall continue discussing models here in future case studies.
     </p>
 
     <p style="margin-top:1cm; text-align:right; margin-right:6em; font-size:large">
@@ -431,17 +439,22 @@
         After compensating for splits and dividends.
       </li>
       <li id="note3">
-        Factor models are covariance models in which the covariance matrix takes the form
+        Estimating all covariance parameters in large-scale portfolios is a tricky task.
+        More often than not, optimal portfolios end up exploiting features of the
+        covariance matrix that end up in the model via uncertainties in the estimation
+        procedure. Factor models reduce the need to estimat all covariance parameters
+        by structuring the returns as a function of a reduced set of <em>factors</em>,
+        which can be thought of playing a proxy role for a diversified
+        <em>market portfolio</em>. One such typical structure is in the form
         $$
-           C = C_\alpha + \beta \, C_f \, \beta^T
+           C = C_\alpha + \beta \, C_f \, \beta^T.
         $$
         In the above model, \( C_\alpha \) is usually a diagonal matrix, and the covariance
-        matrix \( C_f \) is the covariance matrix of the <em>factors</em>, which can be
-        assets, indices, or other indicators, which are believed to represent the overall
-        <em>market</em> performance.
-        <br/>
-        <br/>
-        Factor models are typically calculated by first establishing a relationship
+        matrix \( C_f \) is the covariance matrix of the factors.
+        See the next note for more details in how those matrices are constructed.
+      </li>
+      <li id="note4">
+        Factor models are typically obtained by first establishing a relationship
         between the assets and the factors. For example,
         $$
           r_i = \alpha_i + \sum_{k} \beta_{i,k} f_k + \epsilon_i
@@ -451,7 +464,7 @@
         <em>intrinsic</em> or <em>unsystematic</em> portion of the returns,
         whereas the \( \beta_{i,j} \)'s represent the <em>systematic</em> part.
         Here again, logarithms complicate things, and one needs to be careful in
-        calculating the model estimates.
+        calculating model estimates.
       </li>
 <!--      <li id="note4">-->
 <!--        Because \( \log \) is a concave function, if \( \theta_i \geq 0 \), then-->
