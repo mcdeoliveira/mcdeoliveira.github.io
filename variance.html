@@ -198,10 +198,10 @@
         \theta_x &= \theta_y = \frac{1}{2}.
       \end{aligned}
       $$
-      The complete variance, as a function of \( \theta_x \), is shown in the side figure.
-      In this figure, \( \theta_x = 1 \) corresponds to selecting a portfolio with
-      only one asset, \( x \), and \( \theta_x = 0 \) corresponds to selecting a portfolio with
-      only the other asset, \( y \).
+      The complete variance, as a function of \( \theta_x \), is shown by the blue curve
+      in the side figure. In this figure, \( \theta_x = 1 \) corresponds to selecting a
+      portfolio with only one asset, \( x \), and \( \theta_x = 0 \) corresponds to
+      selecting a portfolio with only the other asset, \( y \).
     </p>
 
     <p>
@@ -233,7 +233,7 @@
         \theta_y = \frac{1}{5}.
       \end{aligned}
       $$
-      This situation is also depicted in the figure above.
+      This is depicted in <a href="#fig1">Fig. 1</a> as the orange curve.
     </p>
 
     <p>
@@ -620,24 +620,74 @@
       $$
       In this notation, \( c_{i, j} \) is the correlation between assets \( i \) and
       \( j \) and \( c_{i, i} \) is the variance of the \( i \)th asset. It is convenient
-      to assemble the coefficients of the variance into the <em>covariance matrix</em>
+      to assemble the coefficients of the above calculation into the vectors and matrix
       $$
+        \begin{aligned}
+        r &= \begin{pmatrix}
+          \mu_1 \\
+          \mu_2 \\
+          \vdots \\
+          \mu_n
+        \end{pmatrix}, &
+        \theta &= \begin{pmatrix}
+          \theta_1 \\
+          \theta_2 \\
+          \vdots \\
+          \theta_n
+        \end{pmatrix}, &
         C = \begin{bmatrix}
           c_{1,1} & c_{1,2} & \cdots & c_{1,n} \\
           c_{2,1} & c_{2,2} & \cdots & c_{2,n} \\
           \vdots & \vdots & \ddots & \vdots \\
           c_{n,1} & c_{n,2} & \cdots & c_{n,n}
-        \end{bmatrix}
+        \end{bmatrix}.
+        \end{aligned}
       $$
-      Note that the covariance matrix is <em>symmetric</em> because \( c_{i ,j} = c_{j, i} \).
+      The matrix \( C \) is known as the <em>covariance matrix</em>. Note that the
+      covariance matrix is <em>symmetric</em> because \( c_{i ,j} = c_{j, i} \).
+      Using this notation, the return and the variance of the portfolio become simply
+      $$
+        \begin{aligned}
+          \mu &= r^T \theta, &
+          \sigma^2 &= \theta^T C \theta.
+        \end{aligned}
+      $$
       In the case of two assets, the covariance matrix is the 2-by-2 matrix
       $$
+        \tag{1} \label{eq:cov2}
         C = \begin{bmatrix}
           \sigma_x^2 & \rho_{x, y} \sigma_x \sigma_y \\
           \rho_{x, y} \sigma_x \sigma_y & \sigma_y^2
         \end{bmatrix}.
       $$
-      Every symmetric matrix can be <em>diagonalized</em>, which in this 2-by-2 case means that
+    </p>
+
+    <p>
+      Some properties of the covariance matrix are only revealed after applying some
+      transformations. One such useful transformation is the factorization
+      $$
+      \begin{aligned}
+        C &= V D V^T, &
+        V^T V &= I, &
+        D &=
+        \begin{bmatrix}
+          d_1 & 0 & \cdots & 0 \\
+          0 & d_2 & \cdots & 0 \\
+          \vdots & \vdots & \ddots & \vdots \\
+          0 & 0 & \cdots & d_n \\
+        \end{bmatrix}, &
+        d_i &\geq 0,
+      \end{aligned}
+      $$
+      in which \( D \) is a <em>diagonal matrix</em>. The particulars of the formulas are not as
+      important as the <em>shape</em> of the arrays. The \( d_i \)'s are the
+      <em>components</em> of the variance, and the \( i \)th column of the matrix \( V \)
+      represents a combination of the original assets that is uncorrelated with the
+      combinations produced by the other columns of \( V \) and has variance \( d_i \).
+    </p>
+
+    <p>
+      In the 2-by-2 case, diagonalization means that
       $$
       \begin{aligned}
         C &=
@@ -663,36 +713,18 @@
         \Delta &= \sigma_x^4+2 \sigma_x^2 \left(2 \rho_{xy}^2-1\right) \sigma_y^2 + \sigma_y^4.
       \end{aligned}
       $$
-      The particulars of the formulas are not as important as the <em>shape</em> of the
-      arrays. In the general case,
-      $$
-      \begin{aligned}
-        C &= V D V^T, &
-        D &=
-        \begin{bmatrix}
-          d_1 & 0 & \cdots & 0 \\
-          0 & d_2 & \cdots & 0 \\
-          \vdots & \vdots & \ddots & \vdots \\
-          0 & 0 & \cdots & d_n \\
-        \end{bmatrix}, &
-        d_i \geq 0.
-      \end{aligned}
-      $$
-      The \( d_i \)'s are the <em>components</em> of the variance, and the \( i \)th
-      column of the matrix \( V \) represents a combination of the original assets that is
-      uncorrelated with the combinations produced by the other columns of \( V \) and has
-      variance \( d_i \).
-    </p>
-
-    <p>
-      For example, in the 2-by-2 example, if \( \rho_{x,y} = 0 \) and
+      If \( \rho_{x,y} = 0 \) and
       \( \sigma_x \geq \sigma_y \) then
       \( d_1 = \sigma_x^2 \) and
       \( d_2 = \sigma_y^2 \), as expected, since the original assets were already
       uncorrelated. However, if \( \rho_{x,y} = 1 \) or \( \rho_{x,y} = -1 \) then
       \( d_1 = \sigma_x^2 + \sigma_y^2 \) and \( d_2 = 0 \). Note that the non-zero
-      correlation component is the same regardless if the correlation is positive or
-      negative. Take for example, the case \( \sigma_y = 2 \sigma_x \) discussed before.
+      variance component \( d_1 \) is the same regardless if the correlation is positive or
+      negative.
+    </p>
+
+    <p>
+      Take for a concrete example the case \( \sigma_y = 2 \sigma_x \) discussed before.
       When \( \rho_{xy} = \pm 1 \), then
       $$
       \begin{aligned}
@@ -715,7 +747,29 @@
         \end{bmatrix}.
       \end{aligned}
       $$
-      Moreover, because of the zero in \( d_2 \), the covariance matrix can be described
+      Note that it is the sign of the entries in the coefficient array \( V \)
+      that identify the sign of the correlation.
+<!--      When the correlation is positive,-->
+<!--      both entries have the same sign. When the correlation is negative,-->
+<!--      they have opposite signs.-->
+      In either case, as mentioned before, it is possible to find a portfolio that
+      achieves zero variance. Because the columns of \( V \) represent uncorrelated
+      combinations of assets, if we set
+      $$
+        \theta =
+        \frac{1}{1 \mp 2}
+        \begin{pmatrix}
+          \mp 2 \\ 1
+        \end{pmatrix}
+      $$
+      as a multiple of the second column of \( V \), then
+      $$
+        \sigma^2 = \theta^T C \theta = 0.
+      $$
+      As seen before, in the case of positive correlation the zero variance portfolio
+      can only be realized with short sales, while in the case of negative correlation
+      it is portfolio with positive positions.
+      Finally, because of the zero in \( d_2 \), the covariance matrix can be described
       more compactly as
       $$
       \begin{aligned}
@@ -727,13 +781,9 @@
         \end{bmatrix}
         \begin{bmatrix}
           \pm 1 & 2
-        \end{bmatrix},
+        \end{bmatrix}.
       \end{aligned}
       $$
-      from which we can see that it is the sign of the entries in the coefficient vector
-      that identify the sign of the correlation. When the correlation is positive,
-      both entries have the same sign. When the correlation is negative,
-      they have opposite signs.
     </p>
 
     <p>
@@ -761,9 +811,10 @@
     </ul>
 
     <p>
-      Before moving on to another subject, it is worth noticing that one need to use
-      more powerful tools to understand the correlation of multiple assets. For example,
-      consider the following matrix as a possible covariance matrix:
+      Before moving on, we consider a last example to illustrate that it is not always
+      straightforward to generalize our intuitive understanding of correlation from two
+      to multiple assets. For example, consider the following matrix as a possible
+      covariance matrix:
       $$
       \begin{aligned}
         C &=
@@ -803,7 +854,7 @@
         \end{bmatrix}^T
       \end{aligned}
       $$
-      which reveals (more on that magic on the next section) that the transformed variables
+      which reveals (more on that magic in the next section) that the transformed variables
       $$
       \begin{aligned}
         y_1 &= \rho \, (x_1 + x_2), &
@@ -820,7 +871,7 @@
       investors.
     </p>
 
-    <h2>Factor Models</h2>
+    <h2>Estimating the Covariance Matrix</h2>
 
     <p>
       Covariance provides a solid foundation from which to start exploring and, hopefully,
@@ -840,21 +891,86 @@
       in which the \( x_k \)'s are now \( n \)-dimensional vectors instead of scalar
       samples. One immediate difficulty is the fact that if \( N < n \), then
       \( \hat{C} \) will be such that at least \( N - n \) variance components are exactly
-      zero. If that is not a property of the underlying property, then we should be
-      prepared to obtain at least \( N \geq n \) samples. In a portfolio with thousands or
-      even hundreds assets, this may not be possible, or when possible, might span a too
-      large time interval as to render the exercise irrelevant. Even in the cases in
-      which it is reasonable to expect that only a few large covariance components to
-      exist, it might still not be wise to attempt to directly estimate the covariance matrix
-      of a large number of assets. In the following paragraphs we discuss one alternative
-      procedure that opens up other possibilities.
+      zero. In order to avoid zero principal components, one must therefore obtain
+      at least \( N \geq n \) samples. In a portfolio with
+      thousands or even as little as hundreds of assets, this may not be possible or,
+      when possible, might span a too large time interval as to render the exercise
+      irrelevant. In practice, one may end up employing approximate regularization
+      techniques[<a href="#ref1">1</a>], especially if the covariance matrix is to be
+      inverted. The literature on the subject is extensive, and no single method fits
+      all applications. See, for instance, [<a href="#ref2">2</a>], for a more
+      in-depth discussion. For finance applications, the best methods seem to be the ones
+      based on <em>factor models</em>, which we discuss next.
+    </p>
+
+    <h2>Factor Models</h2>
+
+    <p>
+      Start by considering the seemingly unrelated problem of comparing the return of an
+      asset to the return of <em>the market</em>. Without getting into the debate of what
+      is it that constitute the market, here we can take a portfolio with enough
+      diversification, or a large basket of asset, such as the S&P 500 as a proxy for the
+      market. If we denote the market proxy by \( v \) then we can proceed to estimate
+      a 2-by-2 covariance matrix relating the market with a select asset \( x \).
+      Such a covariance matrix has the form \( \eqref{eq:cov2} \), with \( \sigma_v \)
+      in place of \( \sigma_y \).
     </p>
 
     <p>
-      Start by considering the seemingly unrelated problem of attempting to estimate the
-      relationship between a set of assets with another set of assets, indices, indicators,
-      etc., which we shall refer to as the <em>factors</em>. For example, one might seek
-      a linear relationship between the return of \( n \) assets and \( m \) factors of the form
+      From another angle, if the return of the asset and the market are related by
+      $$
+        \tag{2} \label{eq:model}
+        r_x - \mu_x = \beta_x (r_v - \mu_v) + \epsilon_x
+      $$
+      in which \( \epsilon_x \) is a zero-mean model error with variance
+      \( \sigma_x^2 \) that we assume to be uncorrelated with the market. In that case,
+      the covariance matrix of the asset and the return is equal to
+      $$
+        C = \begin{bmatrix}
+          \sigma_x^2 + \beta_x^2 \sigma_v^2 & \beta_x \sigma_v^2 \\
+          \beta_x \sigma_v^2 & \sigma_v^2
+        \end{bmatrix}.
+      $$
+      Comparing this covariance matrix with the matrix in \( \eqref{eq:cov2} \), we have
+      that
+      $$
+        \beta_x = \frac{\rho_{x v} \sigma_x}{\sigma_v}.
+      $$
+      This means that knowledge of the coefficient \( \beta \) is equivalent to knowledge
+      of the correlation between the asset and the market. This is akin to the classic
+      CAPM (Capital Asset Pricing Model)[<a href="#ref3">3</a>], which relates the expected
+      return of an asset with the expected rate of return of the market.
+    </p>
+
+    <p>
+      In the case of multiple assets we can use the above idea to construct the
+      covariance matrix of the entire portfolio. Indeed, if we let \( r_x \),
+      \( \epsilon_x \), and \( \beta_x \) be vectors in \( \eqref{eq:model} \), then
+      $$
+        C = \begin{bmatrix}
+          C_x & \beta_x \sigma_v^2 \\
+          \beta_x^T \sigma_v^2 & \sigma_v^2
+        \end{bmatrix}
+      $$
+      in which the
+      $$
+        C_x = \Sigma_x + \sigma_v^2 \beta_x^{} \beta_x^T
+      $$
+      is the portfolio covariance matrix we are after. The &ldquo;unsystematic&rdquo;
+      part of the covariance, that is the matrix \( \Sigma_x \) is often approximated as
+      a diagonal matrix which can be estimated, for example, as the sample variances of
+      the residues in the model.
+    </p>
+
+    <p>
+      This idea can be generalized not only to multiple assets, but also to multiple
+      market assets, which are referred to as the model <em>factors</em>. Besides assets,
+      one can use indices, indicators, or other fundamental variables as factors.
+    </p>
+
+    <p>
+      Given a set of market assets, one estimates a linear relationship between the
+      return of \( n \) assets and \( m \) factors of the form
       $$
       \begin{aligned}
         r_1 - \hat{\mu}_{x_1} &= \beta_{1,1} \, (v_1 -  \hat{\mu}_{v_1}) + \beta_{1,2} \, (v_2 -  \hat{\mu}_{v_2}) + \cdots + \beta_{1,m} \, (v_m -  \hat{\mu}_{v_m}) + \epsilon_1, \\
@@ -863,22 +979,29 @@
         r_n - \hat{\mu}_{x_n} &= \beta_{n,1} \, (v_1 -  \hat{\mu}_{v_1}) + \beta_{n,2} \, (v_2 -  \hat{\mu}_{v_2}) + \cdots + \beta_{n,m} \, (v_m -  \hat{\mu}_{v_m}) + \epsilon_n,
       \end{aligned}
       $$
-      in which the \( \epsilon_i \)'s represent modeling errors, for example, by solving
-      a linear regression. In matrix form
+      in which the \( \epsilon_i \)'s represent modeling errors and the \( \hat{mu} \)'s
+      are estimates of the mean return of the assets and the factors. The resulting array
+      \( \beta \) can be calculated from historical data, for example, performing a regression.
+    </p>
+
+    <p>
+      In matrix form,
       $$
       \begin{aligned}
         r - \hat{\mu}_{x} &= \beta \, (v -  \hat{\mu}_{v}) + \epsilon, \\
       \end{aligned}
       $$
-      If \( C_v \) is the factors' covariance matrix if
-      with which we can infer the covariance matrix of the assets to be of the form
+      resulting in the portfolio covariance matrix
       $$
       \begin{aligned}
-         C_x &= \Upsilon + \beta C_v
+         C_x &= \Sigma_x + \beta \, C_v \, \beta^T.
       \end{aligned}
       $$
-
-
+      Typically, the number of factors are kept small, from
+      one to tens of assets or indicators, while the number of portfolio assets can be in
+      the thousands. In that way, the entries in \( C_v \) can be accurately estimated.
+      Moreover, the estimate of the coefficients \( \beta \) can be independently
+      validated.
     </p>
 
     <p style="margin-top:1cm; text-align:right; margin-right:6em; font-size:large">
@@ -889,15 +1012,21 @@
 
     <ol>
       <li id="ref1">
-        Harry M. Markowitz, &ldquo;Portfolio Selection&rdquo;. <em>Journal of
-        Finance</em>, <bf>7</bf>(1): 77 - 91, 1952.
+        O. Ledoit and M. Wolf, &ldquo;A well-conditioned estimator for large-dimensional
+        covariance matrices,&rdquo; <em>Journal of Multivariate Analysis</em> 88 (2):
+        365&ndash;411, 2004.
       </li>
       <li id="ref2">
+        Jianqing Fan,  Yuan Liao,  Han Liu, &ldquo;An overview of the estimation of large
+        covariance and precision matrices,&rdquo; <em>The Econometrics Journal</em>
+        19 (1): C1&ndash;C32, 2016
+      </li>
+      <li id="ref3">
         Edwin J. Elton and Martin J. Gruber, <em>Modern Portfolio
         Theory and Investment Analysis</em>. Fifth Edition, John Wiley
         and Sons, 1995.
       </li>
-      <li id="ref3">
+      <li id="ref4">
         Mark S. Joshi and Jane M. Paterson, <em>Introduction to Mathematical Portfolio
         Theory</em>. Cambridge University Press, 2013.
       </li>
