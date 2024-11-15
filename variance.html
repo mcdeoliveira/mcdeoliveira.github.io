@@ -1,0 +1,946 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+      "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+  <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
+  <link href="vicbee.css" rel="stylesheet" type="text/css">
+  <title>VICBee Consulting &mdash; Return and Variance Models</title>
+  <meta name="description" content="Study of assumptions on return and variance asset models">
+  <meta name="keywords" content="portfolio optimization, finance engineering, mathematical models, Kalman filter, Markowitz, quadratic programming, linear programming, dynamic programming">
+
+  <script type="text/x-mathjax-config">
+    MathJax = {
+      tex: {inlineMath: [['$', '$'], ['\\(', '\\)']]}
+    };
+  </script>
+  <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+
+<body>
+
+  <div>
+
+    <img class="top" src="figs/VICBee.jpg" alt="V I C B e e    C o n s u l t i n g"/>
+
+    <p class="masternavbar">
+      <a class="navbar" href="index.html">HOME</a> |
+      <a class="current" href="case.html">CASE STUDIES</a> |
+      <a class="navbar" href="people.html">PEOPLE</a> |
+      <a class="navbar" href="apis.html">REST APIS</a> |
+      <a class="navbar" href="contact.html">CONTACT</a> |
+    </p>
+
+    <p class="subnavbar">
+      <a class="subnavbar" href="case.html">LARGE SCALE PORTFOLIOS</a> |
+      <a class="subnavbar" href="portfolio.html">EFFICIENT FRONTIER</a> |
+      <a class="subnavbar" href="models.html">RETURN MODELS</a> |
+      <a class="subcurrent" href="variance.html">RISK AND VARIANCE</a> |
+    </p>
+
+    <h1>Risk and Variance</h1>
+
+    <p>
+      Having looked at how to estimate <a href="./models.html">meaningful asset returns</a>,
+      we now turn our attention to variance. Variance is perhaps the simpler and
+      by far the most used measure of <em>risk</em> in portfolio optimization.
+      Yet, whereas most people have a good intuitive understanding of variance
+      when speaking of isolated random events, sometimes that does not translate to multiple
+      events, which is the case when working with a <em>portfolio</em> of assets, or
+      what are the implications of attempting to minimize variance.
+      For this reason, we shall start with a somewhat elementary discussion of portfolio
+      variance.
+    </p>
+
+    <h2>Variance and Correlation</h2>
+
+    <p>
+      Variance, as the name indicates, is a measure of variability. Most people are
+      familiar with the <em>sample statistics</em> formulas
+      $$
+        \begin{aligned}
+          \hat{\mu}_x &= \frac{1}{N} \sum_{k = 1}^N x_k, &
+          \hat{\sigma}_x^2 &= \frac{1}{N-1} \sum_{k = 1}^N (x_k - \hat{\mu})^2,
+        \end{aligned}
+      $$
+      which provide <em>estimates</em> for the mean, \( \mu_x = E \{ x \} \),
+      and the variance, \( \sigma^2_x = E \{ (x - \mu_x)^2 \} \),
+      of the random variable, \( x \), calculated from the <em>samples</em> \( x_k \),
+      \( k = 1, \cdots, n \). It is worth pointing out that a huge leap of faith
+      here is the very belief that the observed samples, the \( x_k \)'s, can be described
+      by a <em>probabilistic model!</em>
+    </p>
+
+    <p>
+      Now let \( x \) and \( y \) be two assets whose returns we would like to model as
+      random variables. Let the mean and variance of each asset return be given by
+      $$
+        \begin{aligned}
+          E \{ r_x \} &= \mu_x, &
+          E \{ (r_x - \mu_x)^2 \} &= \sigma^2_x, &
+          E \{ r_y \} &= \mu_y, &
+          E \{ (r_y - \mu_y)^2 \} &= \sigma^2_y.
+        \end{aligned}
+      $$
+      If we consider a simple portfolio valued at \( \pi \) made up of a combination of
+      the assets \( x \) and \( y \), then<sup style="font-size:xx-small">[<a href="#note1">1</a>]</sup>
+      $$
+        \begin{aligned}
+          \pi &= x + y, &
+          \theta_x &= \frac{x}{\pi} \geq 0, &
+          \theta_y &= \frac{y}{\pi} \geq 0, &
+          \theta_x + \theta_y &= 1.
+        \end{aligned}
+      $$
+      Here \( \theta_x \) and \( \theta_y \) are the percentages of each asset in the
+      portfolio, that is the <em>portfolio weights</em>, and the expected return of the
+      portfolio is the familiar
+      $$
+      \begin{aligned}
+        \mu
+        = E \{ r \}
+        = \theta_x E \{ r_x \} + \theta_y E \{ r_y \}
+        = \theta_x \, \mu_x + \theta_y \, \mu_y
+        = \theta_x \, \mu_x + (1 - \theta_x) \mu_y,
+      \end{aligned}
+      $$
+      which expresses the fact the expected return of the portfolio is a combination of
+      the expected return of each asset.
+    </p>
+
+    <p>
+      The next natural question is &ldquo;what is the variance of the portfolio?&rdquo;
+      In order to answer this question we need more information than we presently have.
+      When calculating,
+      $$
+      \begin{aligned}
+        \sigma^2
+        =
+        E \{ (r - \mu)^2 \}
+        =
+        \theta_x^2 \sigma^2_x + \theta_y^2 \sigma^2_y + 2 \theta_x^{} \theta_y^{} E \{ (r_x - \mu_x) (r_y - \mu_y)^2 \}
+      \end{aligned}
+      $$
+      there appears the new quantity
+      $$
+        E \{ (r_x - \mu_x) (r_y - \mu_y) \}
+      $$
+      which depends <em>jointly</em> on \( r_x \) and \( r_y \), and is known
+      as the <em>correlation</em> between \( r_x \) and \( r_y \). It is convenient to
+      rewrite the correlation in terms of the <em>coefficient of correlation</em>,
+      \( \rho_{xy} \), and the standard deviations of the individual assets, as in
+      $$
+        E \{ (r_x - \mu_x) (r_y - \mu_y) \} = \rho_{x y} \, \sigma_x \, \sigma_y, \qquad -1 \leq \rho_{x y} \leq 1.
+      $$
+      One consequence of \( \rho_{xy} \) being bounded between -1 and 1, is that the
+      variance of the portfolio is never larger than the variance of the individual assets,
+      which follows from
+      $$
+      \begin{aligned}
+        \sigma^2
+        \leq
+        \theta_x^2 \sigma^2_x + \theta_y^2 \sigma^2_y + 2 \theta_x^{} \theta_y^{} \sigma_x^{} \sigma_y^{}
+        =
+        (\theta_x \sigma_x + \theta_y \sigma_y)^2
+        =
+        (\theta_x \sigma_x + (1 - \theta_x) \sigma_y)^2
+        \leq
+        \max \{ \sigma_x^2, \sigma_y^2 \}.
+      \end{aligned}
+      $$
+      Yet, the variance of the portfolio can be smaller than the variance of
+      the individual assets! In fact, it will often be smaller.
+      We shall discuss some concrete situations in the next paragraphs.
+    </p>
+
+    <h3>Uncorrelated assets</h3>
+
+    <p>
+      When no correlation exists, that is \( \rho_{x y} = 0 \), the variance of the
+      portfolio is
+      $$
+      \begin{aligned}
+        \sigma^2
+        =
+        \theta_x^2 \sigma^2_x + \theta_y^2 \sigma^2_y
+        =
+        \theta_x^2 \sigma^2_x + (1 - \theta_x)^2 \sigma^2_y.
+      \end{aligned}
+      $$
+      Even if the variance of the assets is the same, that is \( \sigma_y = \sigma_x \),
+      in which case
+      $$
+      \begin{aligned}
+        \sigma^2
+        =
+        (\theta_x^2 + \theta_y^2) \sigma^2_x
+        =
+        (\theta_x^2 + (1 - \theta_x^{})^2) \sigma^2_x
+        =
+        (2 \theta_x^2 - 2 \theta_x^{} + 1) \sigma^2_x
+        \geq
+        \frac{1}{2} \sigma_x^2,
+      \end{aligned}
+      $$
+    </p>
+
+    <div class="right" id="fig1">
+      <img height="300" src="figs/var1.jpg" alt="Variance"/>
+      <p class="text-center">
+        Fig. 1: Variance
+      </p>
+    </div>
+
+    <p>
+      the smallest possible variance is attained by holding the portfolio
+      $$
+      \begin{aligned}
+        \theta_x &= \theta_y = \frac{1}{2}.
+      \end{aligned}
+      $$
+      The complete variance, as a function of \( \theta_x \), is shown in the side figure.
+      In this figure, \( \theta_x = 1 \) corresponds to selecting a portfolio with
+      only one asset, \( x \), and \( \theta_x = 0 \) corresponds to selecting a portfolio with
+      only the other asset, \( y \).
+    </p>
+
+    <p>
+      Even in the case of more than two assets, if all assets have the same variance,
+      then the portfolio with the minimum variance consists of equal amounts of all assets.
+    </p>
+
+    <p>
+      Different asset variances typically skew the combination toward the asset with the
+      least variance, but the portfolio with the minimum possible variance still holds
+      some of the larger variance asset. For example, if \( \sigma_y = 2 \sigma_x \) then
+      $$
+      \begin{aligned}
+        \sigma^2
+        =
+        (\theta_x^2 + 4 \theta_y^2) \sigma^2_x
+        =
+        (\theta_x^2 + 4 (1 - \theta_x)^2) \sigma^2_x
+        =
+        (5 \theta_x^2 - 8 \theta_x + 4) \sigma^2_x
+        \geq
+        \frac{4}{5} \sigma_x^2,
+      \end{aligned}
+      $$
+      which is minimized by the portfolio
+      $$
+      \begin{aligned}
+        \theta_x &= \frac{4}{5}, &
+        \theta_y = \frac{1}{5}.
+      \end{aligned}
+      $$
+      This situation is also depicted in the figure above.
+    </p>
+
+    <p>
+      On the one hand, it is nice to see that minimizing variance seems to promote
+      <em>diversification</em>, but on the other hand, many are puzzled by the fact that
+      holding an asset with a known higher variance can reduce the overall variance,
+      and that the minimum possible variance is still smaller than the variance of the
+      asset with the smallest variance.
+    </p>
+
+    <p>
+      In reality, this scenario is actually familiar to most: think of the two assets
+      as two dice and the portfolio return as the mean of each roll of the two dice.
+      Actually think of 100 dice! Don't you expect that every time you
+      roll 100 dice and calculate the mean you would get a number close to 3.5?
+      And that the variance around the mean would indeed get smaller the larger the number
+      of dice that you throw every time you calculate the mean?
+    </p>
+
+    <p>
+      The dice analogy works because of the expectation that all dice are fair (unbiased)
+      and that each die rolling is <em>independent</em>, which implies that their they
+      outcomes are uncorrelated. Correlation will be discussed next.
+    </p>
+
+    <h3>Positively correlated assets</h3>
+
+    <p>
+      When it comes to correlated assets, it matters whether the correlation is negative
+      or positive. Consider first the case of the largest possible positive correlation
+      coefficient, that is \( \rho_{x y} = 1 \). In this case,
+      $$
+      \begin{aligned}
+        \sigma^2
+        =
+        \theta_x^2 \sigma^2_x + \theta_y^2 \sigma^2_y + 2 \theta_x^{} \theta_y^{} \sigma_x^{} \sigma_y^{}
+        =
+        (\theta_x \sigma_x + \theta_y \sigma_y)^2
+        =
+        (\theta_x \sigma_x + (1 - \theta_x) \sigma_y)^2.
+      \end{aligned}
+      $$
+      If the variance of the assets is the same, that is \( \sigma_y = \sigma_x \), then
+      $$
+      \begin{aligned}
+        \sigma^2
+        =
+        (\theta_x + (1 - \theta_x))^2 \sigma_x^2
+        =
+        \sigma_x^2
+        =
+        \sigma_y^2
+      \end{aligned}
+      $$
+      which is the same no matter what portfolio you pick.
+      With different variances, say \( \sigma_y = \zeta \sigma_x \),
+      \( \zeta > 0 \),
+      then
+      $$
+      \begin{aligned}
+        \sigma^2
+        =
+        (\theta_x \sigma_x + \theta_y \sigma_y)^2
+        =
+        (\theta_x + \zeta (1 - \theta_x))^2 \sigma_x^2
+        =
+        (\zeta + (1 - \zeta) \theta_x)^2 \sigma_x^2.
+      \end{aligned}
+      $$
+      The minimum variance now depends on whether \( \zeta \) is smaller or larger than
+      one. If \( \zeta > 1 \), that is if the variance of \( y \) is larger than the
+      variance of \( x \) then
+      $$
+      \begin{aligned}
+        \sigma^2
+        =
+        (\zeta + (1 - \zeta) \theta_x)^2 \sigma_x^2
+        \geq
+        \sigma_x^2
+      \end{aligned}
+      $$
+      and the portfolio with minimum variance is
+      $$
+      \begin{aligned}
+        \theta_x &= 1, &
+        \theta_y = 0.
+      \end{aligned}
+      $$
+      Conversely, if \( 0 < \zeta < 1 \), that is if the variance of \( x \) is larger than the
+      variance of \( y \), then
+      $$
+      \begin{aligned}
+        \sigma^2
+        =
+        (\zeta + (1 - \zeta) \theta_x)^2 \sigma_x^2
+        \geq
+        \zeta^2 \sigma_x^2 = \sigma_y^2
+      \end{aligned}
+      $$
+      and the portfolio with minimum variance is
+      $$
+      \begin{aligned}
+        \theta_x &= 0, &
+        \theta_y = 1.
+      \end{aligned}
+      $$
+    </p>
+
+    <p>
+      Most people would think that those results &ldquo;make sense,&rdquo; actually
+      corresponding to their expectations of minimum variance. In a way, most people's
+      intuition, in this case, is to think in terms of fully correlated assets.
+    </p>
+
+    <p>
+      At this point, a correlation that is still positive but not quite equal to one
+      should put us somewhere between the fully positively correlated and the uncorrelated
+      case. Indeed, that is the case, with a twist. For example, and without getting
+      into details, if \( \sigma_y = 2 \sigma_x \), then the minimum variance is equal to
+      $$
+      \begin{aligned}
+        \sigma^2
+        &=
+        \frac{4 (1 - \rho_{x y}^2)}{5 - 4 \rho_{x y}} \sigma_x^2, &
+        \theta_x &= \frac{4 - 2 \rho_{x y}}{5 - 4 \rho_{x y}}, &
+        \theta_y &= 1 - \theta_x, &
+        0 &\leq \rho_{x y} \leq \frac{1}{2}.
+      \end{aligned}
+      $$
+      But if \( 1/2 \leq \rho_{x y} \leq 1 \), then the minimum possible variance is
+      $$
+      \begin{aligned}
+        \sigma^2 &= \sigma_x^2, &
+        \theta_x &= 1, &
+        \theta_y &= 0, &
+        \frac{1}{2} &\leq \rho_{x y} \leq 1.
+      \end{aligned}
+      $$
+      This is the case because beyond \( \rho_{x y} \geq 1/2 \) the minimum possible
+      variance would require one to hold more than 100% of the first
+      asset, which is not something that we are willing to allow in this
+      analysis<sup style="font-size:xx-small">[<a href="#note2">2</a>]</sup>. In fact,
+      in the case of fully correlated assets, and if one is willing to go beyond a 100%
+      in one asset, which would imply a negative holding on the other asset, then one
+      can achieve, in principle, <em>zero variance</em> by letting
+      $$
+      \begin{aligned}
+        \theta_x \sigma_x &= (\theta_x - 1) \sigma_y &
+        & \Longrightarrow &
+        \theta_x &= \frac{1}{1 - \sigma_x/\sigma_y}.
+      \end{aligned}
+      $$
+      Note that the value of \( \theta_x \) that achieves zero variance is either larger
+      than one or negative. In this case, simply constraining \( \theta_x \) and
+      \( \theta_y \) from taking negative values is enough to avoid this case.
+      We will have more to say about this in the next section.
+<!--      It is remarkable-->
+<!--      how constraints already play a key role in determining what is an optimal-->
+<!--      portfolio, even in this seemingly trivial case.-->
+    </p>
+
+    <h3>Negatively correlated assets</h3>
+
+    <p>
+      We start the conversation about negatively correlated assets by again considering
+      the case of completely negatively correlated assets, \( \rho_{x y} = -1 \), with
+      which
+      $$
+      \begin{aligned}
+        \sigma^2
+        =
+        \theta_x^2 \sigma^2_x + \theta_y^2 \sigma^2_y - 2 \theta_x^{} \theta_y^{} \sigma_x^{} \sigma_y^{}
+        =
+        (\theta_x \sigma_x - \theta_y \sigma_y)^2
+        =
+        (\theta_x \sigma_x - (1 - \theta_x) \sigma_y)^2.
+      \end{aligned}
+      $$
+      In spite of the similarities with the formula obtained in the case of fully
+      positively correlated assets something different seems to be at work here.
+      Take for example the possibility of achieving zero variance, which meant in the
+      case of positively correlated assets that one would need to hold negative
+      portfolio positions. With negative correlations, zero variance can be achieved by
+      setting
+      $$
+      \begin{aligned}
+        \theta_x \sigma_x &= (1 - \theta_x) \sigma_y &
+        & \Longrightarrow &
+        \theta_x &= \frac{1}{1 + \sigma_x/\sigma_y} \in (0, 1),
+      \end{aligned}
+      $$
+      which is a perfectly fine positive portfolio position.
+      For example, if \( \sigma_y = \sigma_x \), then this is the equal weights portfolio
+      $$
+      \begin{aligned}
+        \theta_x &= \theta_y = \frac{1}{2}.
+      \end{aligned}
+      $$
+      The meaning of achieving zero variance in the presence of negatively
+      correlated assets is that of maximizing <em>hedging</em> by taking a position that
+      is expected to move in opposite directions. If assets are identified as
+      fully negatively correlated, all it takes is to include both assets in the portfolio,
+      without the need to take negative positions.
+    </p>
+
+    <p>
+      Moving toward less negative correlations, we will revisit some of the same cases
+      considered earlier. If the variance of the assets is the same,
+      that is \( \sigma_y = \sigma_x \), then
+      $$
+      \begin{aligned}
+        \sigma^2
+        =
+        (\theta_x^2 + (1 - \theta_x)^2 + 2 \rho_{x y} \theta_x (1 - \theta_x) ) \sigma_x^2
+        \geq
+        \frac{1 + \rho_{xy}}{2} \sigma_x^2
+      \end{aligned}
+      $$
+      and the portfolio that minimizes the variance is always
+      $$
+      \begin{aligned}
+        \theta_x &= \theta_y = \frac{1}{2}.
+      \end{aligned}
+      $$
+    </p>
+
+    <p>
+      With different variances, say \( \sigma_y = 2 \sigma_x \), then
+      $$
+      \begin{aligned}
+        \sigma^2 &= \frac{4 (1 - \rho_{xy}^2)}{5 - 4 \rho_{xy}} \sigma_x^2, &
+        \theta_x &= \frac{4 - 2 \rho_{xy}}{5 - 4 \rho_{xy}}, &
+        \theta_y &= 1 - \theta_x, &
+        \theta_y &= 1 - \theta_x, &
+        -1 &\leq \rho_{x y} \leq \frac{1}{2},
+      \end{aligned}
+      $$
+      which is just an extension of the previously obtained formula that now covers the
+      case of negative correlations.
+      Interestingly, negative correlations never produce negative portfolio positions.
+      As noted before, hedging is done implicitly by the negative correlation.
+    </p>
+
+    <h3>Variance versus return</h3>
+
+    <div class="right" id="fig2">
+      <img height="300" src="figs/var2.jpg" alt="Variance"/>
+      <p class="text-center">
+        Fig.2: Variance versus return.
+      </p>
+    </div>
+
+    <p>
+      Exclusively minimizing the variance is however rarely the main objective of portfolio
+      optimization, after all, it is return that investors are looking for, and variance,
+      as a measure of risk, is introduced to help guide the decision towards less
+      risky positions. Such combination works because the variance and the return of a
+      portfolio typically force a trade-off. We will explore those trade-offs in this
+      section.
+    </p>
+
+    <p>
+      Take for example, the case of two uncorrelated assets with \( \sigma_y = 2 \sigma_x \)
+      studied above. The variance of the portfolio was shown before to be equal to
+      $$
+      \begin{aligned}
+        \sigma^2
+        =
+        (5 \theta_x^2 - 8 \theta_x + 4) \sigma^2_x
+        \geq
+        \frac{4}{5} \sigma_x^2.
+      \end{aligned}
+      $$
+      Assume now that the returns of the individual assets in the portfolio are
+      $$
+      \begin{aligned}
+        \mu_x &= 1, & \mu_y = 2,
+      \end{aligned}
+      $$
+      which is the typical case in which larger returns come with larger risk (variance),
+      so that the portfolio return is
+      $$
+      \begin{aligned}
+        \mu &= \theta_x \, \mu_x + \theta_y \, \mu_y
+        =
+        \theta_x + 2 (1 - \theta_x)
+        =
+        2 - \theta_x.
+      \end{aligned}
+      $$
+      In this simple case of only two assets, the position
+      $$
+      \begin{aligned}
+        \theta_x = 2 - \mu
+      \end{aligned}
+      $$
+      is a straightforward function of the portfolio return. Moreover, any return \( \mu \)
+      between \( \mu_x = 1 \) and \( \mu_y = 2 \) leads to a positive position, for which
+      we can calculate the corresponding variance. The result is the blue curve in
+      <a href="#fig2">Fig. 2</a>, in which the standard deviation of the portfolio is in
+      the x-axis and the return is in the y-axis. This somewhat peculiar way of plotting
+      return versus variance is the norm in portfolio analysis. A couple of comments are
+      in order:
+    </p>
+
+    <ul>
+      <li>
+        The return and variance of the two assets in the portfolio are the two blue dots in the plot.
+      </li>
+      <li>
+        The minimum variance can be lower than the smallest of
+        the assets' variances. The minimum possible variance is
+        \( \sigma = \sigma_x \sqrt{4/5} \), which corresponds to the lowest point in the variance
+        plot in <a href="#fig1">Fig. 1</a> attained at \( \theta_x = 4/5 \), or equivalently,
+        at a return \( \mu = 2 - 4/5 = 6/5 \).
+      </li>
+      <li>
+        The &ldquo;lower portion&rdquo; of the variance curve, that is the one with
+        returns \( \mu \leq 6/5 \) is omitted. This is because there is no
+        reason to choose returns lower than  \( \mu = 6/5 \) as there exist another
+        return (on the &ldquo;upper portion&rdquo; of the variance curve) with the same
+        variance but higher return.
+      </li>
+      <li>
+        According to the model, an investor holding 100% of the \( x \) with a return
+        equal to \( \mu = \mu_x = 1 \) could be enjoying a much higher return
+        \( \mu = 1.4 \) with the same variance if he or she were to hold a portfolio
+        \( \theta_x = 0.6 \), \( \theta_y = 0.4 \) instead.
+      </li>
+      <li>
+        We also plot two other curves in this same setup: one for a slightly positive
+        correlation, \( \rho_{xy} = 2/10 \) (green), and another for a slightly negative
+        correlation, \( \rho_{xy} = -2/10 \) (orange). With a positive correlation,
+        the variance is now increased for the same return. Conversely, with a negative
+        correlation, the variances decrease for the same return.
+      </li>
+    </ul>
+
+    <div class="right" id="fig3">
+      <img height="300" src="figs/var3.jpg" alt="Variance"/>
+      <p class="text-center">
+        Fig.3: Variance versus return.
+      </p>
+    </div>
+
+    <p>
+      A similar picture can be drawn for the same variance scenario but the unusual returns
+      $$
+      \begin{aligned}
+        \mu_x &= 2, & \mu_y = 1.
+      \end{aligned}
+      $$
+      Note that in this case the asset with the largest return is the one with the
+      smallest variance, so one would expect that an investor seeking to maximize the
+      portfolio return would simply pick 100% of the asset \( x \). While that is
+      indeed the case, the plots in <a href="#fig3">Fig. 3</a> show that, perhaps
+      contrary to intuition, it is possible to further reduce the variance by sacrificing
+      a small portion of the return and holding some amount of the asset \( y \) that has larger
+      variance and smaller return. The amount of variance reduction possible depends on
+      the correlation of the assets. The minimum possible variance gets smaller as the assets'
+      correlation gets smaller.
+    </p>
+
+    <h2>The Covariance of Many Assets</h2>
+
+    <p>
+      The above analysis can be extended to an arbitrary number of assets. In a portfolio
+      with many assets, the expected return and variance of the portfolio is
+      $$
+        \mu = \theta_1 \, \mu_1 + \theta_2 \, \mu_2 + \cdots + \theta_n \, \mu_n
+        = \sum_{i= 1}^n \theta_i \, \mu_i,
+      $$
+      and the variance is
+      $$
+        \sigma^2 =
+        \sum_{i = 1}^n \sum_{j = 1}^n c_{i, j} \,\theta_i \, \theta_j
+      $$
+      in which
+      $$
+        \begin{aligned}
+          \mu_{i} &= E \{ r_i \}, &
+          c_{i,j} &= E \{ (r_i - \mu_i) (r_j - \mu_j) \}.
+        \end{aligned}
+      $$
+      In this notation, \( c_{i, j} \) is the correlation between assets \( i \) and
+      \( j \) and \( c_{i, i} \) is the variance of the \( i \)th asset. It is convenient
+      to assemble the coefficients of the variance into the <em>covariance matrix</em>
+      $$
+        C = \begin{bmatrix}
+          c_{1,1} & c_{1,2} & \cdots & c_{1,n} \\
+          c_{2,1} & c_{2,2} & \cdots & c_{2,n} \\
+          \vdots & \vdots & \ddots & \vdots \\
+          c_{n,1} & c_{n,2} & \cdots & c_{n,n}
+        \end{bmatrix}
+      $$
+      Note that the covariance matrix is <em>symmetric</em> because \( c_{i ,j} = c_{j, i} \).
+      In the case of two assets, the covariance matrix is the 2-by-2 matrix
+      $$
+        C = \begin{bmatrix}
+          \sigma_x^2 & \rho_{x, y} \sigma_x \sigma_y \\
+          \rho_{x, y} \sigma_x \sigma_y & \sigma_y^2
+        \end{bmatrix}.
+      $$
+      Every symmetric matrix can be <em>diagonalized</em>, which in this 2-by-2 case means that
+      $$
+      \begin{aligned}
+        C &=
+        \begin{bmatrix}
+          v_{1,1} & v_{1,2} \\
+          v_{2,1} & v_{2,2}
+        \end{bmatrix}
+        \begin{bmatrix}
+          d_1 & 0 \\
+          0 & d_2
+        \end{bmatrix}
+        \begin{bmatrix}
+          v_{1,1} & v_{2,1} \\
+          v_{1,2} & v_{2,2}
+        \end{bmatrix}, &
+        d_1 &= \frac{1}{2} \left ( \sigma_x^2 + \sigma_y^2 + \sqrt{\Delta} \right ), &
+        d_2 &= \frac{1}{2} \left ( \sigma_x^2 + \sigma_y^2 - \sqrt{\Delta} \right ),
+      \end{aligned}
+      $$
+      in which
+      $$
+      \begin{aligned}
+        \Delta &= \sigma_x^4+2 \sigma_x^2 \left(2 \rho_{xy}^2-1\right) \sigma_y^2 + \sigma_y^4.
+      \end{aligned}
+      $$
+      The particulars of the formulas are not as important as the <em>shape</em> of the
+      arrays. In the general case,
+      $$
+      \begin{aligned}
+        C &= V D V^T, &
+        D &=
+        \begin{bmatrix}
+          d_1 & 0 & \cdots & 0 \\
+          0 & d_2 & \cdots & 0 \\
+          \vdots & \vdots & \ddots & \vdots \\
+          0 & 0 & \cdots & d_n \\
+        \end{bmatrix}, &
+        d_i \geq 0.
+      \end{aligned}
+      $$
+      The \( d_i \)'s are the <em>components</em> of the variance, and the \( i \)th
+      column of the matrix \( V \) represents a combination of the original assets that is
+      uncorrelated with the combinations produced by the other columns of \( V \) and has
+      variance \( d_i \).
+    </p>
+
+    <p>
+      For example, in the 2-by-2 example, if \( \rho_{x,y} = 0 \) and
+      \( \sigma_x \geq \sigma_y \) then
+      \( d_1 = \sigma_x^2 \) and
+      \( d_2 = \sigma_y^2 \), as expected, since the original assets were already
+      uncorrelated. However, if \( \rho_{x,y} = 1 \) or \( \rho_{x,y} = -1 \) then
+      \( d_1 = \sigma_x^2 + \sigma_y^2 \) and \( d_2 = 0 \). Note that the non-zero
+      correlation component is the same regardless if the correlation is positive or
+      negative. Take for example, the case \( \sigma_y = 2 \sigma_x \) discussed before.
+      When \( \rho_{xy} = \pm 1 \), then
+      $$
+      \begin{aligned}
+        C &=
+        \sigma_x^2
+        \begin{bmatrix}
+          1 & \pm 2 \\
+          \pm 2 & 4
+        \end{bmatrix}, &
+        V &=
+        \frac{1}{\sqrt{5}}
+        \begin{bmatrix}
+          \pm 1 & \mp 2 \\
+          2 & 1
+        \end{bmatrix}, &
+        D &=
+        \begin{bmatrix}
+          5 \, \sigma_x^2 & 0 \\
+          0 & 0
+        \end{bmatrix}.
+      \end{aligned}
+      $$
+      Moreover, because of the zero in \( d_2 \), the covariance matrix can be described
+      more compactly as
+      $$
+      \begin{aligned}
+        C &=
+        \sigma_x^2
+        \begin{bmatrix}
+          \pm 1 \\
+          2
+        \end{bmatrix}
+        \begin{bmatrix}
+          \pm 1 & 2
+        \end{bmatrix},
+      \end{aligned}
+      $$
+      from which we can see that it is the sign of the entries in the coefficient vector
+      that identify the sign of the correlation. When the correlation is positive,
+      both entries have the same sign. When the correlation is negative,
+      they have opposite signs.
+    </p>
+
+    <p>
+      Similar conclusions carry over to the case of multiple assets:
+    </p>
+
+    <ul>
+      <li>
+        Only in a fully uncorrelated portfolio will the correlation components and the
+        variance of the individual assets be the same.
+      </li>
+      <li>
+        Correlation concentrates the variances of distinct assets into fewer
+        variance components.
+      </li>
+      <li>
+        The variance components, that is the diagonal entries of the matrix \( D \),
+        do not contain information on the <em>sign</em> of the correlations.
+        That information is on the coefficient matrix \( V \).
+      </li>
+      <li>
+        When there are fully correlated assets, then the covariance matrix can be
+        represented more compactly by fewer factors<sup style="font-size:xx-small">[<a href="#note3">3</a>]</sup>.
+      </li>
+    </ul>
+
+    <p>
+      Before moving on to another subject, it is worth noticing that one need to use
+      more powerful tools to understand the correlation of multiple assets. For example,
+      consider the following matrix as a possible covariance matrix:
+      $$
+      \begin{aligned}
+        C &=
+        \begin{bmatrix}
+          1 & 0 & \rho \\
+          0 & 1 & \rho \\
+          \rho & \rho & 1
+        \end{bmatrix}.
+      \end{aligned}
+      $$
+      One might think it is possible for \( \rho \) to be equal to one, which, according
+      to our 2-by-2 notion of correlation, would seem to imply that the third asset is
+      fully correlated with the first and second assets. It turns out that this is
+      impossible<sup style="font-size:xx-small">[<a href="#note4">4</a>,<a href="#note5">5</a>]</sup>, and one can
+      show that \( \rho \) must be such that \( |\rho| \leq \sqrt{2}/2 \).
+    </p>
+
+    <p>
+      Interestingly enough, when \( \rho = \sqrt{2}/2 \) then
+      $$
+      \begin{aligned}
+        C &=
+        \begin{bmatrix}
+          \rho & \rho & 0 \\
+          \rho & -\rho & 0 \\
+          0 & 0 & 1
+        \end{bmatrix}
+        \begin{bmatrix}
+          1 & 0 & 0 \\
+          0 & 1 & 1 \\
+          0 & 1 & 1
+        \end{bmatrix}
+        \begin{bmatrix}
+          \rho & \rho & 0 \\
+          \rho & -\rho & 0 \\
+          0 & 0 & 1
+        \end{bmatrix}^T
+      \end{aligned}
+      $$
+      which reveals (more on that magic on the next section) that the transformed variables
+      $$
+      \begin{aligned}
+        y_1 &= \rho \, (x_1 + x_2), &
+        y_2 &= \rho \, (x_1 - x_2), &
+        y_3 &= x_3,
+      \end{aligned}
+      $$
+      are such that \( y_1 \) is not correlated with \( y_2 \) nor \( y_3 \) and that
+      \( y_2 \) and \( y_3 \) are fully positively correlated. In order to
+      &ldquo;discover&rdquo; these &ldquo;hidden&rdquo; correlations it was necessary to
+      look beyond the individual assets, that is look into possible combinations of
+      assets. The discovery of such not very obvious relationships among the assets is
+      one of the many aspects that makes portfolio optimization a useful tool for
+      investors.
+    </p>
+
+    <h2>Factor Models</h2>
+
+    <p>
+      Covariance provides a solid foundation from which to start exploring and, hopefully,
+      also exploiting the correlation of multiple assets. However, estimating a complete
+      covariance matrix for a portfolio with a large number of assets is not an easy task.
+      There are several practical obstacles that make the resulting estimates not very
+      accurate. One is the demand for a large number of samples. Perhaps the most
+      straightforward covariance estimate is the following generalization of the univariate
+      sample variance formula shown at the beginning of this note:
+      $$
+        \begin{aligned}
+          \hat{\mu} &= \frac{1}{N} \sum_{k = 1}^N x_k, &
+          \hat{C} &= \frac{1}{N-1} \sum_{k = 1}^N
+            (x_k - \hat{\mu}) (x_k - \hat{\mu})^T,
+        \end{aligned}
+      $$
+      in which the \( x_k \)'s are now \( n \)-dimensional vectors instead of scalar
+      samples. One immediate difficulty is the fact that if \( N < n \), then
+      \( \hat{C} \) will be such that at least \( N - n \) variance components are exactly
+      zero. If that is not a property of the underlying property, then we should be
+      prepared to obtain at least \( N \geq n \) samples. In a portfolio with thousands or
+      even hundreds assets, this may not be possible, or when possible, might span a too
+      large time interval as to render the exercise irrelevant. Even in the cases in
+      which it is reasonable to expect that only a few large covariance components to
+      exist, it might still not be wise to attempt to directly estimate the covariance matrix
+      of a large number of assets. In the following paragraphs we discuss one alternative
+      procedure that opens up other possibilities.
+    </p>
+
+    <p>
+      Start by considering the seemingly unrelated problem of attempting to estimate the
+      relationship between a set of assets with another set of assets, indices, indicators,
+      etc., which we shall refer to as the <em>factors</em>. For example, one might seek
+      a linear relationship between the return of \( n \) assets and \( m \) factors of the form
+      $$
+      \begin{aligned}
+        r_1 - \hat{\mu}_{x_1} &= \beta_{1,1} \, (v_1 -  \hat{\mu}_{v_1}) + \beta_{1,2} \, (v_2 -  \hat{\mu}_{v_2}) + \cdots + \beta_{1,m} \, (v_m -  \hat{\mu}_{v_m}) + \epsilon_1, \\
+        r_2 - \hat{\mu}_{x_2} &= \beta_{2,1} \, (v_1 -  \hat{\mu}_{v_1}) + \beta_{2,2} \, (v_2 -  \hat{\mu}_{v_2}) + \cdots + \beta_{2,m} \, (v_m -  \hat{\mu}_{v_m}) + \epsilon_2, \\
+        \vdots \qquad & \qquad \vdots \\
+        r_n - \hat{\mu}_{x_n} &= \beta_{n,1} \, (v_1 -  \hat{\mu}_{v_1}) + \beta_{n,2} \, (v_2 -  \hat{\mu}_{v_2}) + \cdots + \beta_{n,m} \, (v_m -  \hat{\mu}_{v_m}) + \epsilon_n,
+      \end{aligned}
+      $$
+      in which the \( \epsilon_i \)'s represent modeling errors, for example, by solving
+      a linear regression. In matrix form
+      $$
+      \begin{aligned}
+        r - \hat{\mu}_{x} &= \beta \, (v -  \hat{\mu}_{v}) + \epsilon, \\
+      \end{aligned}
+      $$
+      If \( C_v \) is the factors' covariance matrix if
+      with which we can infer the covariance matrix of the assets to be of the form
+      $$
+      \begin{aligned}
+         C_x &= \Upsilon + \beta C_v
+      \end{aligned}
+      $$
+
+
+    </p>
+
+    <p style="margin-top:1cm; text-align:right; margin-right:6em; font-size:large">
+      <em>Mauricio de Oliveira</em>
+    </p>
+
+    <h2>References</h2>
+
+    <ol>
+      <li id="ref1">
+        Harry M. Markowitz, &ldquo;Portfolio Selection&rdquo;. <em>Journal of
+        Finance</em>, <bf>7</bf>(1): 77 - 91, 1952.
+      </li>
+      <li id="ref2">
+        Edwin J. Elton and Martin J. Gruber, <em>Modern Portfolio
+        Theory and Investment Analysis</em>. Fifth Edition, John Wiley
+        and Sons, 1995.
+      </li>
+      <li id="ref3">
+        Mark S. Joshi and Jane M. Paterson, <em>Introduction to Mathematical Portfolio
+        Theory</em>. Cambridge University Press, 2013.
+      </li>
+    </ol>
+
+    <h2>Notes</h2>
+
+    <ol>
+      <li id="note1">
+        We limit our attention to the case of non-negative portfolio positions.
+      </li>
+      <li id="note2">
+        This could be possible if one holds a negative position on the second asset, that
+        is if we allow &ldquo;short-sales.&rdquo;
+      </li>
+      <li id="note3">
+        The covariance matrix is not <em>full rank</em> in this case.
+      </li>
+      <li id="note4">
+        This matrix is not positive semi-definite, hence it cannot be a covariance matrix.
+      </li>
+      <li id="note5">
+        For those seeking for a more intuitive &ldquo;explanation,&rdquo; if the 2-by-2
+        reasoning would apply verbatim, how could one asset be fully correlated with two
+        other assets that are themselves uncorrelated?
+      </li>
+    </ol>
+
+    <p class="bottom">
+      Copyright &copy; 2009, 2024 VICBee Consulting
+    </p>
+
+  </div>
+
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-11888840-1");
+pageTracker._trackPageview();
+} catch(err) {}</script>
+
+</body>
+</html>

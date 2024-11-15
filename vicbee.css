@@ -4,7 +4,13 @@ body {
   margin-right: auto;
   width: 862px;
   background-color: #708090;
-  font-family: sans-serif;
+  /*font-family: sans-serif;*/
+
+  font-family: "Poppins", Verdana, Arial, Helvetica, sans-serif;
+  font-weight: normal;
+  font-size: 10pt;
+  line-height: 1.8;
+  color: #363636;
 }
 
 div {
@@ -54,7 +60,7 @@ h3 {
   margin-left: 3mm;
   font-family: sans-serif;
   font-style: italic;
-  font-size: large;
+  font-size: medium;
   font-weight: bold;
   color: #36454F;
 }
@@ -192,4 +198,8 @@ a.subcurrent {
   padding-left: 10%;
   padding-right: 10%;
   align-content: space-between;
+}
+
+.text-center {
+  text-align: center;
 }
