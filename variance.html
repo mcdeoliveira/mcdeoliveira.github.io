@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
       "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en-US" xml:lang="en-US">
 <head>
   <meta http-equiv="content-type" content="text/html; charset=iso-8859-1" />
   <link href="vicbee.css" rel="stylesheet" type="text/css">
@@ -11,8 +11,11 @@
 
   <script type="text/x-mathjax-config">
     MathJax = {
-      tex: {inlineMath: [['$', '$'], ['\\(', '\\)']]}
-    };
+      tex: {
+        inlineMath: [['$', '$'], ['\\(', '\\)']],
+        processEscapes: true,
+      }
+    }
   </script>
   <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
 </head>
@@ -47,16 +50,56 @@
       Yet, whereas most people have a good intuitive understanding of variance
       when speaking of isolated random events, sometimes that does not translate to multiple
       events, which is the case when working with a <em>portfolio</em> of assets, or
-      what are the implications of attempting to minimize variance.
-      For this reason, we shall start with a somewhat elementary discussion of portfolio
-      variance.
+      what are the implications of attempting to minimize variance. We provide
+      an elementary overview of portfolio
+      variance in section <a href="#section-variance">Variance and Correlation</a> below.
     </p>
 
-    <h2>Variance and Correlation</h2>
+    <h3>The Models API</h3>
+
+    <p>
+      The
+      <a href="https://optimize.vicbee.net/models/api/ui">Models API</a>
+      produces custom <a href="#section-factor-models">factor models</a> given:
+    </p>
+    <ul>
+      <li>
+        a list of portfolio assets;
+      </li>
+      <li>
+        a list of market assets;
+      </li>
+      <li>
+        one or more date ranges;
+      </li>
+      <li>
+        an investment horizon.
+      </li>
+    </ul>
+
+    <p>
+      The list of portfolio and market assets can contain most global publicly traded
+      equities, ETFs, and most popular cryptocurrencies. Models spanning multiple
+      overlapping historical date range are calculated efficiently by querying prices
+      only once. Return and covariance are estimated using daily closing prices using the
+      methodology described in the case study <a href="models.html">Return Models</a> and
+      in the <a href="#section-factor-models">section below</a>. The return and covariance
+      are then adjusted to reflect the provided investment horizon.
+    </p>
+
+    <p>
+      A custom model is build in response to each query, reflecting the universe of
+      portfolio and market assets provided. In the rest of this note we provide
+      background material on some of the underlying concepts behind the type of
+      return and variance models calculated by the
+      <a href="https://optimize.vicbee.net/models/api/ui">Models API</a>.
+    </p>
+
+    <h2 id="section-variance">Variance and Correlation</h2>
 
     <p>
       Variance, as the name indicates, is a measure of variability. Most people are
-      familiar with the <em>sample statistics</em> formulas
+      familiar with the <em>sample statistics</em> formulas:
       $$
         \begin{aligned}
           \hat{\mu}_x &= \frac{1}{N} \sum_{k = 1}^N x_k, &
@@ -66,13 +109,11 @@
       which provide <em>estimates</em> for the mean, \( \mu_x = E \{ x \} \),
       and the variance, \( \sigma^2_x = E \{ (x - \mu_x)^2 \} \),
       of the random variable, \( x \), calculated from the <em>samples</em> \( x_k \),
-      \( k = 1, \cdots, n \). It is worth pointing out that a huge leap of faith
-      here is the very belief that the observed samples, the \( x_k \)'s, can be described
-      by a <em>probabilistic model!</em>
+      \( k = 1, \cdots, n \).
     </p>
 
     <p>
-      Now let \( x \) and \( y \) be two assets whose returns we would like to model as
+      Now let \( x \) and \( y \) be two assets whose returns we model as
       random variables. Let the mean and variance of each asset return be given by
       $$
         \begin{aligned}
@@ -433,8 +474,8 @@
       \end{aligned}
       $$
       The meaning of achieving zero variance in the presence of negatively
-      correlated assets is that of maximizing <em>hedging</em> by taking a position that
-      is expected to move in opposite directions. If assets are identified as
+      correlated assets is that of <em>hedging</em>, which works by taking positions that
+      are expected to move in opposite directions. If assets are identified as
       fully negatively correlated, all it takes is to include both assets in the portfolio,
       without the need to take negative positions.
     </p>
@@ -477,14 +518,14 @@
       As noted before, hedging is done implicitly by the negative correlation.
     </p>
 
-    <h3>Variance versus return</h3>
-
     <div class="right" id="fig2">
       <img height="300" src="figs/var2.jpg" alt="Variance"/>
       <p class="text-center">
         Fig.2: Variance versus return.
       </p>
     </div>
+
+    <h3>Variance versus return</h3>
 
     <p>
       Exclusively minimizing the variance is however rarely the main objective of portfolio
@@ -553,12 +594,12 @@
       <li>
         The &ldquo;lower portion&rdquo; of the variance curve, that is the one with
         returns \( \mu \leq 6/5 \) is omitted. This is because there is no
-        reason to choose returns lower than  \( \mu = 6/5 \) as there exist another
+        reason to choose returns lower than  \( \mu = 6/5 \) as there exists another
         return (on the &ldquo;upper portion&rdquo; of the variance curve) with the same
         variance but higher return.
       </li>
       <li>
-        According to the model, an investor holding 100% of the \( x \) with a return
+        According to the model, an investor holding 100% in the asset \( x \) with a return
         equal to \( \mu = \mu_x = 1 \) could be enjoying a much higher return
         \( \mu = 1.4 \) with the same variance if he or she were to hold a portfolio
         \( \theta_x = 0.6 \), \( \theta_y = 0.4 \) instead.
@@ -597,7 +638,7 @@
       correlation gets smaller.
     </p>
 
-    <h2>The Covariance of Many Assets</h2>
+    <h2 id="section-covariance">The Covariance of Many Assets</h2>
 
     <p>
       The above analysis can be extended to an arbitrary number of assets. In a portfolio
@@ -748,7 +789,7 @@
       \end{aligned}
       $$
       Note that it is the sign of the entries in the coefficient array \( V \)
-      that identify the sign of the correlation.
+      that identifies the sign of the correlation.
 <!--      When the correlation is positive,-->
 <!--      both entries have the same sign. When the correlation is negative,-->
 <!--      they have opposite signs.-->
@@ -768,7 +809,7 @@
       $$
       As seen before, in the case of positive correlation the zero variance portfolio
       can only be realized with short sales, while in the case of negative correlation
-      it is portfolio with positive positions.
+      it is a portfolio with non-negative positions.
       Finally, because of the zero in \( d_2 \), the covariance matrix can be described
       more compactly as
       $$
@@ -854,7 +895,7 @@
         \end{bmatrix}^T
       \end{aligned}
       $$
-      which reveals (more on that magic in the next section) that the transformed variables
+      which <em>reveals</em> that the transformed variables
       $$
       \begin{aligned}
         y_1 &= \rho \, (x_1 + x_2), &
@@ -871,7 +912,7 @@
       investors.
     </p>
 
-    <h2>Estimating the Covariance Matrix</h2>
+    <h2 id="section-estimation">Estimating the Covariance Matrix</h2>
 
     <p>
       Covariance provides a solid foundation from which to start exploring and, hopefully,
@@ -896,45 +937,43 @@
       thousands or even as little as hundreds of assets, this may not be possible or,
       when possible, might span a too large time interval as to render the exercise
       irrelevant. In practice, one may end up employing approximate regularization
-      techniques[<a href="#ref1">1</a>], especially if the covariance matrix is to be
+      techniques [<a href="#ref1">1</a>], especially if the covariance matrix is to be
       inverted. The literature on the subject is extensive, and no single method fits
       all applications. See, for instance, [<a href="#ref2">2</a>], for a more
       in-depth discussion. For finance applications, the best methods seem to be the ones
       based on <em>factor models</em>, which we discuss next.
     </p>
 
-    <h2>Factor Models</h2>
+    <h2 id="section-factor-models">Factor Models</h2>
 
     <p>
       Start by considering the seemingly unrelated problem of comparing the return of an
-      asset to the return of <em>the market</em>. Without getting into the debate of what
-      is it that constitute the market, here we can take a portfolio with enough
-      diversification, or a large basket of asset, such as the S&P 500 as a proxy for the
-      market. If we denote the market proxy by \( v \) then we can proceed to estimate
-      a 2-by-2 covariance matrix relating the market with a select asset \( x \).
-      Such a covariance matrix has the form \( \eqref{eq:cov2} \), with \( \sigma_v \)
-      in place of \( \sigma_y \).
-    </p>
-
-    <p>
-      From another angle, if the return of the asset and the market are related by
+      asset to the return of <em>the market</em>. Putting aside the perennial debate of
+      what is it that constitute <em>the market</em>, take a portfolio with enough
+      diversification or a large basket of assets, such as the S&P 500, as a proxy for the
+      market. Then posit that the return of a select asset, \( r_x \), and the return of
+      the market proxy, \( v \), are related by
       $$
         \tag{2} \label{eq:model}
-        r_x - \mu_x = \beta_x (r_v - \mu_v) + \epsilon_x
+        r_x - \mu_x = \beta \, (v - \mu_v) + \epsilon
       $$
-      in which \( \epsilon_x \) is a zero-mean model error with variance
-      \( \sigma_x^2 \) that we assume to be uncorrelated with the market. In that case,
-      the covariance matrix of the asset and the return is equal to
+      in which \( \epsilon \) is a zero-mean random variable with variance
+      \( \sigma_\epsilon^2 \) that represents model errors. If we assume that the
+      model errors \( \epsilon \) are uncorrelated with the market, then the covariance
+      matrix of the asset and the return is equal to
       $$
-        C = \begin{bmatrix}
-          \sigma_x^2 + \beta_x^2 \sigma_v^2 & \beta_x \sigma_v^2 \\
-          \beta_x \sigma_v^2 & \sigma_v^2
-        \end{bmatrix}.
+      \begin{aligned}
+        C &= \begin{bmatrix}
+          \sigma_x^2 & \beta \, \sigma_v^2 \\
+          \beta \, \sigma_v^2 & \sigma_v^2
+        \end{bmatrix}, &
+        \sigma_x^2 &= \sigma_\epsilon^2 + \beta^2 \sigma_v^2.
+      \end{aligned}
       $$
-      Comparing this covariance matrix with the matrix in \( \eqref{eq:cov2} \), we have
-      that
+      Comparing this covariance matrix with the matrix in \( \eqref{eq:cov2} \) with
+      \( \sigma_v \) in place of \( \sigma_y \), we have that
       $$
-        \beta_x = \frac{\rho_{x v} \sigma_x}{\sigma_v}.
+        \beta = \frac{\rho_{x v} \, \sigma_x}{\sigma_v}.
       $$
       This means that knowledge of the coefficient \( \beta \) is equivalent to knowledge
       of the correlation between the asset and the market. This is akin to the classic
@@ -943,27 +982,65 @@
     </p>
 
     <p>
-      In the case of multiple assets we can use the above idea to construct the
+      Conversely, if \( \beta \) and the model errors \( \epsilon \) are calculated,
+      for example after fitting a model of the form \( \eqref{eq:model} \), then
+      $$
+        \sigma_x^2 = \sigma_\epsilon^2 + \beta^2 \sigma_v^2.
+      $$
+      is the covariance of the asset that we are looking for.
+      In the case of multiple assets we can use this framework to construct the
       covariance matrix of the entire portfolio. Indeed, if we let \( r_x \),
-      \( \epsilon_x \), and \( \beta_x \) be vectors in \( \eqref{eq:model} \), then
+      \( \epsilon \), and \( \beta \) be vectors in \( \eqref{eq:model} \), then
       $$
         C = \begin{bmatrix}
-          C_x & \beta_x \sigma_v^2 \\
-          \beta_x^T \sigma_v^2 & \sigma_v^2
+          C_x & \beta \, \sigma_v^2 \\
+          \beta^T \sigma_v^2 & \sigma_v^2
         \end{bmatrix}
       $$
-      in which the
+      in which the matrix
       $$
-        C_x = \Sigma_x + \sigma_v^2 \beta_x^{} \beta_x^T
+        C_x = \Sigma_x + \sigma_v^2 \, \beta^{} \beta^T
       $$
-      is the portfolio covariance matrix we are after. The &ldquo;unsystematic&rdquo;
-      part of the covariance, that is the matrix \( \Sigma_x \) is often approximated as
+      is the portfolio covariance matrix. The &ldquo;unsystematic&rdquo;
+      part of the covariance, that is the matrix \( \Sigma_x \), is often approximated as
       a diagonal matrix which can be estimated, for example, as the sample variances of
       the residues in the model.
+      For example, in the case of two assets the factor model
+      $$
+      \begin{aligned}
+      \begin{pmatrix}
+        r_1 - \hat{\mu}_{1} \\
+        r_2 - \hat{\mu}_{2}
+      \end{pmatrix}
+      &=
+      \begin{pmatrix}
+        \beta_{1} \\
+        \beta_{2}
+      \end{pmatrix}
+      (v -  \hat{\mu}_{v})
+      +
+      \begin{pmatrix}
+        \epsilon_{1} \\
+        \epsilon_{2}
+      \end{pmatrix},
+      \end{aligned}
+      $$
+      produces the 2-by-2 covariance matrix
+      $$
+        C_x = \begin{bmatrix}
+          \sigma_{\epsilon_1}^2 + \sigma_v^2 \, \beta_1^2 & \sigma_v^2 \, \beta_1 \beta_2 \\
+          \sigma_v^2 \, \beta_1 \beta_2 & \sigma_{\epsilon_2}^2 + \sigma_v^2 \, \beta_2^2.
+        \end{bmatrix}.
+      $$
+      Note how it is the product of the coefficients \( \beta_1 \beta_2 \) encode the
+      correlation between the two assets. In fact, part of the magic of factor models is
+      the ability to infer the correlation between assets without directly comparing
+      them. Instead, the covariance is obtained by assessing how each asset is related
+      with the market.
     </p>
 
     <p>
-      This idea can be generalized not only to multiple assets, but also to multiple
+      Factor models can be generalized not only to multiple assets, but also to multiple
       market assets, which are referred to as the model <em>factors</em>. Besides assets,
       one can use indices, indicators, or other fundamental variables as factors.
     </p>
@@ -973,35 +1050,40 @@
       return of \( n \) assets and \( m \) factors of the form
       $$
       \begin{aligned}
-        r_1 - \hat{\mu}_{x_1} &= \beta_{1,1} \, (v_1 -  \hat{\mu}_{v_1}) + \beta_{1,2} \, (v_2 -  \hat{\mu}_{v_2}) + \cdots + \beta_{1,m} \, (v_m -  \hat{\mu}_{v_m}) + \epsilon_1, \\
-        r_2 - \hat{\mu}_{x_2} &= \beta_{2,1} \, (v_1 -  \hat{\mu}_{v_1}) + \beta_{2,2} \, (v_2 -  \hat{\mu}_{v_2}) + \cdots + \beta_{2,m} \, (v_m -  \hat{\mu}_{v_m}) + \epsilon_2, \\
+        r_1 - \hat{\mu}_{1} &= \beta_{1,1} \, (v_1 -  \hat{\mu}_{v_1}) + \beta_{1,2} \, (v_2 -  \hat{\mu}_{v_2}) + \cdots + \beta_{1,m} \, (v_m -  \hat{\mu}_{v_m}) + \epsilon_1, \\
+        r_2 - \hat{\mu}_{2} &= \beta_{2,1} \, (v_1 -  \hat{\mu}_{v_1}) + \beta_{2,2} \, (v_2 -  \hat{\mu}_{v_2}) + \cdots + \beta_{2,m} \, (v_m -  \hat{\mu}_{v_m}) + \epsilon_2, \\
         \vdots \qquad & \qquad \vdots \\
-        r_n - \hat{\mu}_{x_n} &= \beta_{n,1} \, (v_1 -  \hat{\mu}_{v_1}) + \beta_{n,2} \, (v_2 -  \hat{\mu}_{v_2}) + \cdots + \beta_{n,m} \, (v_m -  \hat{\mu}_{v_m}) + \epsilon_n,
+        r_n - \hat{\mu}_{n} &= \beta_{n,1} \, (v_1 -  \hat{\mu}_{v_1}) + \beta_{n,2} \, (v_2 -  \hat{\mu}_{v_2}) + \cdots + \beta_{n,m} \, (v_m -  \hat{\mu}_{v_m}) + \epsilon_n,
       \end{aligned}
       $$
-      in which the \( \epsilon_i \)'s represent modeling errors and the \( \hat{mu} \)'s
-      are estimates of the mean return of the assets and the factors. The resulting array
-      \( \beta \) can be calculated from historical data, for example, performing a regression.
+      in which the \( \epsilon_i \)'s represent modeling errors and the \( \hat{\mu} \)'s
+      are estimates of the mean return of the assets and the factors. The underlying model
+      is the same as \( \eqref{eq:model} \) in which \( v \) is now a vector and
+      \( \beta \) a rectangular array. The portfolio covariance matrix is then
+      $$
+      \begin{aligned}
+         C_x &= \Sigma_x + \beta \, C_v \, \beta^T,
+      \end{aligned}
+      $$
+      which can be calculated after estimating \( \beta \), \( \Sigma_x \), and \( C_v \)
+      from historical data. Typically, the number of factors are kept small, from
+      one to tens of assets or indicators, while the number of portfolio assets can be in
+      the thousands. In this way, we guarantee that the entries in the market correlation
+      matrix \( C_v \) are accurately estimated.
     </p>
 
     <p>
-      In matrix form,
-      $$
-      \begin{aligned}
-        r - \hat{\mu}_{x} &= \beta \, (v -  \hat{\mu}_{v}) + \epsilon, \\
-      \end{aligned}
-      $$
-      resulting in the portfolio covariance matrix
-      $$
-      \begin{aligned}
-         C_x &= \Sigma_x + \beta \, C_v \, \beta^T.
-      \end{aligned}
-      $$
-      Typically, the number of factors are kept small, from
-      one to tens of assets or indicators, while the number of portfolio assets can be in
-      the thousands. In that way, the entries in \( C_v \) can be accurately estimated.
-      Moreover, the estimate of the coefficients \( \beta \) can be independently
-      validated.
+      When estimating the parameters of a factor model it is important to be careful
+      with the nature of the returns employed in the estimates. In the
+      <a href="https://optimize.vicbee.net/models/api/ui">Models API</a> we apply the
+      same methodology discussed earlier in <a href="models.html">case study</a> to
+      anchor the returns to the present date instead of simply averaging incremental
+      daily returns, which provides a much more sound metric for investors. As discussed
+      in detail in the <a href="models.html">case study</a>, returns and variances of
+      exponential return models are better estimated using log-prices. A variant of these
+      ideas is used also to estimate the covariance of the market. The resulting factor
+      models has a high degree of interpretability and can be validated against the
+      log-price series.
     </p>
 
     <p style="margin-top:1cm; text-align:right; margin-right:6em; font-size:large">
@@ -1025,10 +1107,6 @@
         Edwin J. Elton and Martin J. Gruber, <em>Modern Portfolio
         Theory and Investment Analysis</em>. Fifth Edition, John Wiley
         and Sons, 1995.
-      </li>
-      <li id="ref4">
-        Mark S. Joshi and Jane M. Paterson, <em>Introduction to Mathematical Portfolio
-        Theory</em>. Cambridge University Press, 2013.
       </li>
     </ol>
 

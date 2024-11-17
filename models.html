@@ -284,7 +284,7 @@
       for use in portfolio optimization.
       In the same vein, it is not immediately clear how to proceed on estimating the
       correlation between assets, or to construct
-      <em>factor models</em><sup style="font-size:xx-small">[<a href="#note3">3</a>,<a href="#note4">4</a>]</sup>.
+      <a href="variance.html">factor models</a><sup style="font-size:xx-small">[<a href="#note3">3</a>,<a href="#note4">4</a>]</sup>.
       All of these <i>details</i> are taken care by the algorithms implemented in the
       <a href="https://optimize.vicbee.net/models/api/ui">Models API</a>.
       In translating from logarithmic scale to linear and <em>vice-versa</em>, the
@@ -450,11 +450,12 @@
         which can be thought of playing a proxy role for a diversified
         <em>market portfolio</em>. One such typical structure is in the form
         $$
-           C = C_\alpha + \beta \, C_f \, \beta^T.
+           C = \Sigma_\epsilon + \beta \, C_v \, \beta^T.
         $$
-        In the above model, \( C_\alpha \) is usually a diagonal matrix, and the covariance
-        matrix \( C_f \) is the covariance matrix of the factors.
-        See the next note for more details in how those matrices are constructed.
+        In the above model, \( \Sigma_\epsilon \) is usually a diagonal matrix, and the covariance
+        matrix \( C_v \) is the covariance matrix of the factors.
+        See the next note and this <a href="variance.html">case study</a> for more details
+        on how those matrices are constructed.
       </li>
       <li id="note4">
         Factor models are typically obtained by first establishing a relationship
@@ -467,7 +468,8 @@
         <em>intrinsic</em> or <em>unsystematic</em> portion of the returns,
         whereas the \( \beta_{i,j} \)'s represent the <em>systematic</em> part.
         Here again, logarithms complicate things, and one needs to be careful in
-        calculating model estimates.
+        calculating model estimates. See this <a href="variance.html">case study</a>
+        for more details.
       </li>
 <!--      <li id="note4">-->
 <!--        Because \( \log \) is a concave function, if \( \theta_i \geq 0 \), then-->
